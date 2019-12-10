@@ -1,21 +1,5 @@
 #include "main.h"
-
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
-
+using namespace okapi;
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -23,10 +7,8 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
-
-	pros::lcd::register_btn1_cb(on_center_button);
+	p<ros::lcd::initialize();
+	pros::lcd::set_text(1, "I use arch btw also vegan");
 }
 
 /**
@@ -59,7 +41,6 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {}
-
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -74,18 +55,14 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
+	//declare drivetrain
+	auto drive = ChassisControllerFactory::create(-3, -14, 9, 18);
+	Controller masterController;
 
 	while (true) {
-		int left = master.get_analog(ANALOG_LEFT_Y);
-		int right = master.get_analog(ANALOG_RIGHT_Y);
-		pros::lcd::set_text(0, std::to_string(left));
-		pros::lcd::set_text(1, std::to_string(right));
-		//master.rumble(". - . -");
-		//left_mtr = left;
-		//right_mtr = right;
+		//drivetrain arcade movement
+		drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), -masterController.getAnalog(ControllerAnalog::leftX));
+
 		pros::delay(20);
 	}
 }
