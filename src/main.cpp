@@ -7,7 +7,7 @@ using namespace okapi;
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	p<ros::lcd::initialize();
+	pros::lcd::initialize();
 	pros::lcd::set_text(1, "I use arch btw also vegan");
 }
 
