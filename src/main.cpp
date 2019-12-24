@@ -1,5 +1,15 @@
 #include "main.h"
 using namespace okapi;
+
+#define frontLeftPort 1
+#define frontRightPort 2
+#define backLeftPort 3
+#define backRightPort 4
+auto drive = ChassisControllerFactory::create({frontLeftPort, backLeftPort}, {-frontRightPort, -backRightPort});
+
+Motor arm(6);
+Motor tray(7);
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -8,7 +18,6 @@ using namespace okapi;
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "I use arch btw also vegan");
 }
 
 /**
@@ -41,6 +50,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {}
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -55,14 +65,23 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-	//declare drivetrain
-	auto drive = ChassisControllerFactory::create(-3, -14, 9, 18);
 	Controller masterController;
+    pros::Controller master (CONTROLLER_MASTER);
+
+    ControllerButton trayUpButton(ControllerDigital::A);
+    ControllerButton trayDownButton(ControllerDigital::B);
 
 	while (true) {
-		//drivetrain arcade movement
-		drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), -masterController.getAnalog(ControllerAnalog::leftX));
-
-		pros::delay(20);
+        //drivetrain arcade movement
+        drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), masterController.getAnalog(ControllerAnalog::leftX));
+        
+        //arm movement
+        arm.move(master.get_analog(ANALOG_RIGHT_Y));
+        
+        //tray movement
+        
+        
+        pros::delay(20);
 	}
 }
+
