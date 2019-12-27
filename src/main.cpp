@@ -1,14 +1,15 @@
 #include "main.h"
+#include <cmath>
 using namespace okapi;
 
-#define frontLeftPort 1
-#define frontRightPort 2
-#define backLeftPort 3
-#define backRightPort 4
-auto drive = ChassisControllerFactory::create({frontLeftPort, backLeftPort}, {-frontRightPort, -backRightPort});
+okapi::MotorGroup driveLeft({3_mtr, 4_mtr});
+okapi::MotorGroup driveRight({8_rmtr, 9_rmtr});
+auto drive = ChassisControllerFactory::create(driveLeft, driveRight);
 
-Motor arm(6);
-Motor tray(7);
+pros::Motor arm(10, 0);
+pros::Motor intakeLeft(1, 1);
+pros::Motor intakeRight(2, 0);
+pros::Motor tray(6, 1);
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -18,6 +19,14 @@ Motor tray(7);
  */
 void initialize() {
 	pros::lcd::initialize();
+
+    driveLeft.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+    driveRight.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+
+    arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    intakeLeft.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 }
 
 /**
@@ -68,18 +77,54 @@ void opcontrol() {
 	Controller masterController;
     pros::Controller master (CONTROLLER_MASTER);
 
-    ControllerButton trayUpButton(ControllerDigital::A);
-    ControllerButton trayDownButton(ControllerDigital::B);
+    ControllerButton trayUpButton(ControllerDigital::L1);
+    ControllerButton trayDownButton(ControllerDigital::L2);
+
+    ControllerButton armUpButton(ControllerDigital::R1);
+    ControllerButton armDownButton(ControllerDigital::R2);
 
 	while (true) {
         //drivetrain arcade movement
-        drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), masterController.getAnalog(ControllerAnalog::leftX));
+        if(abs(master.get_analog(ANALOG_LEFT_Y) + master.get_analog(ANALOG_LEFT_X)) > 3)
+        {
+            drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), masterController.getAnalog(ControllerAnalog::leftX));
+        }
+        else
+        {
+            drive.stop();
+        }
         
         //arm movement
-        arm.move(master.get_analog(ANALOG_RIGHT_Y));
+        if(armUpButton.isPressed())
+        {
+            arm.move(100);
+        }
+        else if(armDownButton.isPressed())
+        {
+            arm.move(-100);
+        }
+        else
+        {
+            arm.move(0);
+        }
+        
+        //intake control
+        intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y));
+        intakeRight.move(master.get_analog(ANALOG_RIGHT_Y));
         
         //tray movement
-        
+        if(trayUpButton.isPressed())
+        {
+            tray.move(63);
+        }
+        else if(trayDownButton.isPressed())
+        {
+            tray.move(-63);
+        }
+        else
+        {
+            tray.move(0);
+        }
         
         pros::delay(20);
 	}
