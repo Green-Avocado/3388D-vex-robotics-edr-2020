@@ -109,10 +109,15 @@ void opcontrol() {
         }
         
         //intake control
-        if(abs(master.get_analog(ANALOG_RIGHT_Y) > 3))
+        if(abs(master.get_analog(ANALOG_RIGHT_Y)) > 3)
         {
             intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y));
             intakeRight.move(master.get_analog(ANALOG_RIGHT_Y));
+        }
+        else
+        {
+            intakeLeft.move(0);
+            intakeRight.move(0);
         }
         
         //tray movement
