@@ -2,14 +2,22 @@
 #include <cmath>
 using namespace okapi;
 
+//drive declaration
 okapi::MotorGroup driveLeft({3_mtr, 4_mtr});
 okapi::MotorGroup driveRight({8_rmtr, 9_rmtr});
 auto drive = ChassisControllerFactory::create(driveLeft, driveRight);
 
+//motors declaration
 pros::Motor arm(10, 0);
 pros::Motor intakeLeft(1, 1);
 pros::Motor intakeRight(2, 0);
 pros::Motor tray(6, 1);
+
+//constants
+#define driveSpeed 1
+#define armSpeed 0.75
+#define intakeSpeed 1
+#define traySpeed 0.4
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -87,7 +95,7 @@ void opcontrol() {
         //drivetrain arcade movement
         if(abs(master.get_analog(ANALOG_LEFT_Y) + master.get_analog(ANALOG_LEFT_X)) > 3)
         {
-            drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), masterController.getAnalog(ControllerAnalog::leftX));
+            drive.arcade(masterController.getAnalog(ControllerAnalog::leftY), masterController.getAnalog(ControllerAnalog::leftX)*driveSpeed);
         }
         else
         {
@@ -97,11 +105,11 @@ void opcontrol() {
         //arm movement
         if(armUpButton.isPressed())
         {
-            arm.move(100);
+            arm.move(127*armSpeed);
         }
         else if(armDownButton.isPressed())
         {
-            arm.move(-100);
+            arm.move(-127*armSpeed);
         }
         else
         {
@@ -111,8 +119,8 @@ void opcontrol() {
         //intake control
         if(abs(master.get_analog(ANALOG_RIGHT_Y)) > 3)
         {
-            intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y));
-            intakeRight.move(master.get_analog(ANALOG_RIGHT_Y));
+            intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y)*intakeSpeed);
+            intakeRight.move(master.get_analog(ANALOG_RIGHT_Y)*intakeSpeed);
         }
         else
         {
@@ -123,11 +131,11 @@ void opcontrol() {
         //tray movement
         if(trayUpButton.isPressed())
         {
-            tray.move(63);
+            tray.move(127*traySpeed);
         }
         else if(trayDownButton.isPressed())
         {
-            tray.move(-63);
+            tray.move(-127*traySpeed);
         }
         else
         {
