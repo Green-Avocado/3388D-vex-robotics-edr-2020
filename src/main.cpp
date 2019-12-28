@@ -109,8 +109,11 @@ void opcontrol() {
         }
         
         //intake control
-        intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y));
-        intakeRight.move(master.get_analog(ANALOG_RIGHT_Y));
+        if(abs(master.get_analog(ANALOG_RIGHT_Y) > 3))
+        {
+            intakeLeft.move(master.get_analog(ANALOG_RIGHT_Y));
+            intakeRight.move(master.get_analog(ANALOG_RIGHT_Y));
+        }
         
         //tray movement
         if(trayUpButton.isPressed())
