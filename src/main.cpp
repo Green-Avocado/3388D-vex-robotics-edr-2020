@@ -14,10 +14,10 @@ pros::Motor intakeRight(2, 0);
 pros::Motor tray(6, 1);
 
 //constants
-#define driveSpeed 1
+#define driveSpeed 0.8
 #define armSpeed 0.75
 #define intakeSpeed 1
-#define traySpeed 0.4
+#define traySpeed 0.7
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
