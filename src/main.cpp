@@ -49,9 +49,10 @@ int intakeX[replayFrames];
 int trayX[replayFrames];
 int trayY[replayFrames];
 
+
 //motor functions
 void Fdrive(int x, int y) {
-    pros::lcd::print(0, "x: %d", x);
+    //pros::lcd::print(0, "x: %d", x);
     if(abs(y + x) > 3)
     {
         driveLeft1.move((y + x) / 2 * driveSpeed);
@@ -118,8 +119,10 @@ void replay() {
         Farm(armX[i], armY[i]);
         Fintake(intakeX[i]);
         Ftray(trayX[i], trayY[i]);
+      //  master.print(0, "Rec: %d", (replayFrames - i)*replayInterval/1000);
         pros::delay(replayInterval);
     }
+    //master.print(0, "0000");
 }
 
 /**
@@ -133,6 +136,15 @@ void initialize() {
 
     //driveLeft.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
     //driveRight.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
+    for(int i = 0; i < replayFrames; i++) {
+      driveX[i] = 0;
+      driveY[i] = 0;
+      armX[i] = 0;
+      armY[i] = 0;
+      intakeX[i] = 0;
+      trayX[i] = 0;
+      trayY[i] = 0;
+    }
 
     arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     intakeLeft.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -223,9 +235,10 @@ void opcontrol() {
                 trayX[i] = Xbool;
                 trayY[i] = Ybool;
 
+                //master.print(0, "Rec: %d", (replayFrames - i)*replayInterval/1000);
                 pros::delay(replayInterval);
             }
-            pros::delay(1000);
+            //master.print(0, "00000");
         }
 
         //replay
