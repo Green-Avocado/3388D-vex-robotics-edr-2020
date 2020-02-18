@@ -38,6 +38,7 @@ ControllerButton replayButton(ControllerDigital::B);
 #define intakeSpeed 1
 #define traySpeed 0.7
 #define replayFrames 750
+#define replayInterval 20
 
 //replay memory
 int driveX[replayFrames];
@@ -50,6 +51,7 @@ int trayY[replayFrames];
 
 //motor functions
 void Fdrive(int x, int y) {
+    pros::lcd::print(0, "x: %d", x);
     if(abs(y + x) > 3)
     {
         driveLeft1.move((y + x) / 2 * driveSpeed);
@@ -110,12 +112,13 @@ void Ftray(bool x, bool y) {
 }
 
 void replay() {
-    for(int i; i < replayFrames; i++) {
+    for(int i = 0; i < replayFrames; i++) {
+        //printf("%d", i);
         Fdrive(driveX[i], driveY[i]);
         Farm(armX[i], armY[i]);
         Fintake(intakeX[i]);
         Ftray(trayX[i], trayY[i]);
-        pros::delay(20);
+        pros::delay(replayInterval);
     }
 }
 
@@ -191,13 +194,13 @@ void opcontrol() {
         //record inputs
         if(recordButton.isPressed())
         {
-            for(int i; i < replayFrames; i++)
+            for(int i = 0; i < replayFrames; i++)
             {
                 int Xint;
                 int Yint;
                 bool Xbool;
                 bool Ybool;
-                
+
                 Xint = master.get_analog(ANALOG_LEFT_X);
                 Yint = master.get_analog(ANALOG_LEFT_Y);
                 Fdrive(Xint, Yint);
@@ -220,7 +223,7 @@ void opcontrol() {
                 trayX[i] = Xbool;
                 trayY[i] = Ybool;
 
-                pros::delay(20);
+                pros::delay(replayInterval);
             }
             pros::delay(1000);
         }
@@ -241,7 +244,7 @@ void opcontrol() {
         {
             drive.stop();
         }
-        
+
         //arm movement
         if(armUpButton.isPressed())
         {
@@ -255,7 +258,7 @@ void opcontrol() {
         {
             arm.move(0);
         }
-        
+
         //intake control
         if(abs(master.get_analog(ANALOG_RIGHT_Y)) > 3)
         {
@@ -267,7 +270,7 @@ void opcontrol() {
             intakeLeft.move(0);
             intakeRight.move(0);
         }
-        
+
         //tray movement
         if(trayUpButton.isPressed())
         {
@@ -282,8 +285,7 @@ void opcontrol() {
             tray.move(0);
         }
         */
-        
-        pros::delay(20);
+
+        pros::delay(replayInterval);
 	}
 }
-
