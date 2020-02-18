@@ -29,19 +29,24 @@ ControllerButton trayDownButton(ControllerDigital::L2);
 ControllerButton armUpButton(ControllerDigital::R1);
 ControllerButton armDownButton(ControllerDigital::R2);
 
+ControllerButton recordButton(ControllerDigital::A);
+ControllerButton replayButton(ControllerDigital::B);
+
 //constants
 #define driveSpeed 0.8
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
-#define replayFrames 150
+#define replayFrames 750
 
 //replay memory
-int driveLeftArr[replayFrames];
-int driveRightArr[replayFrames];
-int armArr[replayFrames];
-int intakeArr[replayFrames];
-int trayArr[replayFrames];
+int driveX[replayFrames];
+int driveY[replayFrames];
+int armX[replayFrames];
+int armY[replayFrames];
+int intakeX[replayFrames];
+int trayX[replayFrames];
+int trayY[replayFrames];
 
 //motor functions
 void Fdrive(int x, int y) {
@@ -106,6 +111,11 @@ void Ftray(bool x, bool y) {
 
 void replay() {
     for(int i; i < replayFrames; i++) {
+        Fdrive(driveX[i], driveY[i]);
+        Farm(armX[i], armY[i]);
+        Fintake(intakeX[i]);
+        Ftray(trayX[i], trayY[i]);
+        pros::delay(20);
     }
 }
 
@@ -173,10 +183,53 @@ void autonomous() {}
  */
 void opcontrol() {
 	while (true) {
-        Fdrive(master.get_analog(ANALOG_LEFT_Y), master.get_analog(ANALOG_LEFT_X));
+        Fdrive(master.get_analog(ANALOG_LEFT_X), master.get_analog(ANALOG_LEFT_Y));
         Farm(armUpButton.isPressed(), armDownButton.isPressed());
         Fintake(master.get_analog(ANALOG_RIGHT_Y));
         Ftray(trayUpButton.isPressed(), trayDownButton.isPressed());
+
+        //record inputs
+        if(recordButton.isPressed())
+        {
+            for(int i; i < replayFrames; i++)
+            {
+                int Xint;
+                int Yint;
+                bool Xbool;
+                bool Ybool;
+                
+                Xint = master.get_analog(ANALOG_LEFT_X);
+                Yint = master.get_analog(ANALOG_LEFT_Y);
+                Fdrive(Xint, Yint);
+                driveX[i] = Xint;
+                driveY[i] = Yint;
+
+                Xbool = armUpButton.isPressed();
+                Ybool = armDownButton.isPressed();
+                Farm(Xbool, Ybool);
+                armX[i] = Xbool;
+                armY[i] = Ybool;
+
+                Xint = master.get_analog(ANALOG_RIGHT_Y);
+                Fintake(Xint);
+                intakeX[i] = Xint;
+
+                Xbool = trayUpButton.isPressed();
+                Ybool = trayDownButton.isPressed();
+                Ftray(Xbool, Ybool);
+                trayX[i] = Xbool;
+                trayY[i] = Ybool;
+
+                pros::delay(20);
+            }
+            pros::delay(1000);
+        }
+
+        //replay
+        if(replayButton.isPressed())
+        {
+            replay();
+        }
 
         /* OLD CONTROLS
         //drivetrain arcade movement
