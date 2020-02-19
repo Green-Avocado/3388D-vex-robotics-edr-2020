@@ -1,5 +1,6 @@
 #include "main.h"
 #include <cmath>
+#include <string>
 using namespace okapi;
 
 //drive declaration
@@ -37,18 +38,23 @@ ControllerButton replayButton(ControllerDigital::B);
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
-#define replayFrames 750
+#define maxFrames 3000
 #define replayInterval 20
 
 //replay memory
-int driveX[replayFrames];
-int driveY[replayFrames];
-int armX[replayFrames];
-int armY[replayFrames];
-int intakeX[replayFrames];
-int trayX[replayFrames];
-int trayY[replayFrames];
+int replayFrames = 750;
+int driveX[maxFrames];
+int driveY[maxFrames];
+int armX[maxFrames];
+int armY[maxFrames];
+int intakeX[maxFrames];
+int trayX[maxFrames];
+int trayY[maxFrames];
 
+//write file
+void writeSD() {
+    FILE* usd_file_write = fopen("/usd/rec1.txt", "w");
+}
 
 //motor functions
 void Fdrive(int x, int y) {
