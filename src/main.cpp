@@ -122,10 +122,10 @@ void readSD() {
 void Fdrive(int x, int y) {
     if(abs(y + x) > 3)
     {
-        driveLeft1.move((y + x) / 2 * driveSpeed);
-        driveLeft2.move((y + x) / 2 * driveSpeed);
-        driveRight1.move((y - x) / 2 * driveSpeed);
-        driveRight2.move((y - x) / 2 * driveSpeed);
+        driveLeft1.move((y + x) / 2);
+        driveLeft2.move((y + x) / 2);
+        driveRight1.move((y - x) / 2);
+        driveRight2.move((y - x) / 2);
     }
     else
     {
@@ -137,14 +137,14 @@ void Fdrive(int x, int y) {
 }
 
 void Farm(int x) {
-    arm.move(x * armSpeed);
+    arm.move(x);
 }
 
 void Fintake(int x) {
     if(abs(x) > 3)
     {
-        intakeLeft.move(x * intakeSpeed);
-        intakeRight.move(x * intakeSpeed);
+        intakeLeft.move(x);
+        intakeRight.move(x);
     }
     else
     {
@@ -154,7 +154,7 @@ void Fintake(int x) {
 }
 
 void Ftray(int x) {
-    tray.move(x * traySpeed);
+    tray.move(x);
 }
 
 void replay() {
@@ -263,35 +263,36 @@ void autonomous() {
  */
 void opcontrol() {
 	while (true) {
-        Fdrive(master.get_analog(ANALOG_LEFT_X), master.get_analog(ANALOG_LEFT_Y));
-        Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()));
-        Fintake(master.get_analog(ANALOG_RIGHT_Y));
-        Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()));
+        Fdrive(master.get_analog(ANALOG_LEFT_X) * driveSpeed, master.get_analog(ANALOG_LEFT_Y) * driveSpeed);
+        Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
+        Fintake(master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed);
+        Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed);
 
         //record inputs
         if(recordButton.isPressed())
         {
             master.set_text(0, 0, "Recording");
+            replayFrames = framesToRecord;
             for(int i = 0; i < replayFrames; i++)
             {
                 int Xint;
                 int Yint;
 
-                Xint = master.get_analog(ANALOG_LEFT_X);
-                Yint = master.get_analog(ANALOG_LEFT_Y);
+                Xint = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
+                Yint = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
                 Fdrive(Xint, Yint);
                 driveX[i] = Xint;
                 driveY[i] = Yint;
 
-                Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed());
+                Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed;
                 Farm(Xint);
                 armX[i] = Xint;
 
-                Xint = master.get_analog(ANALOG_RIGHT_Y);
+                Xint = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
                 Fintake(Xint);
                 intakeX[i] = Xint;
 
-                Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
+                Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed;
                 Ftray(Xint);
                 trayX[i] = Xint;
 
