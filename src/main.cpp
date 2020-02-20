@@ -31,6 +31,8 @@ ControllerButton armDownButton(ControllerDigital::R2);
 
 ControllerButton recordButton(ControllerDigital::A);
 ControllerButton replayButton(ControllerDigital::B);
+ControllerButton writeButton(ControllerDigital::X);
+ControllerButton readButton(ControllerDigital::Y);
 
 //constants
 #define driveSpeed 0.8
@@ -94,11 +96,40 @@ void writeSD() {
 //read file
 void readSD() {
     FILE* usd_file_read = fopen("/usd/rec1.txt", "r");
+    fscanf(usd_file_read, "%d", &replayFrames);
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", driveX + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", driveY + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", armX + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", armY + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", intakeX + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", trayX + i);
+    }
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fscanf(usd_file_read, "%d", trayY + i);
+    }
+    fclose(usd_file_read);
 }
 
 //motor functions
 void Fdrive(int x, int y) {
-    //pros::lcd::print(0, "x: %d", x);
     if(abs(y + x) > 3)
     {
         driveLeft1.move((y + x) / 2 * driveSpeed);
@@ -160,15 +191,12 @@ void Ftray(bool x, bool y) {
 
 void replay() {
     for(int i = 0; i < replayFrames; i++) {
-        //printf("%d", i);
         Fdrive(driveX[i], driveY[i]);
         Farm(armX[i], armY[i]);
         Fintake(intakeX[i]);
         Ftray(trayX[i], trayY[i]);
-      //  master.print(0, "Rec: %d", (replayFrames - i)*replayInterval/1000);
         pros::delay(replayInterval);
     }
-    //master.print(0, "0000");
 }
 
 /**
@@ -196,6 +224,8 @@ void initialize() {
     intakeLeft.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+    readSD();
 }
 
 /**
@@ -227,7 +257,9 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+    replay();
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -281,16 +313,26 @@ void opcontrol() {
                 trayX[i] = Xbool;
                 trayY[i] = Ybool;
 
-                //master.print(0, "Rec: %d", (replayFrames - i)*replayInterval/1000);
                 pros::delay(replayInterval);
             }
-            //master.print(0, "00000");
         }
 
         //replay
         if(replayButton.isPressed())
         {
             replay();
+        }
+
+        //write
+        if(writeButton.isPressed())
+        {
+            writeSD();
+        }
+
+        //read
+        if(readButton.isPressed())
+        {
+            readSD;
         }
 
         /* OLD CONTROLS
