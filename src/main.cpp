@@ -196,7 +196,7 @@ void initialize() {
     intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
-    readSD();
+    //readSD();
 }
 
 /**
@@ -297,7 +297,7 @@ void opcontrol() {
         //read
         if(readButton.isPressed())
         {
-            readSD;
+            readSD();
         }
 
         /* OLD CONTROLS
