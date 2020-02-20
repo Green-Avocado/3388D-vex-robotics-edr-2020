@@ -1,6 +1,5 @@
 #include "main.h"
 #include <cmath>
-#include <string>
 using namespace okapi;
 
 //drive declaration
@@ -54,6 +53,47 @@ int trayY[maxFrames];
 //write file
 void writeSD() {
     FILE* usd_file_write = fopen("/usd/rec1.txt", "w");
+    fprintf(usd_file_write, "%d\n", replayFrames);
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(driveX + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(driveY + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(armX + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(armY + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(intakeX + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(trayX + i));
+    }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(trayY + i));
+    }
+    fclose(usd_file_write);
+}
+
+//read file
+void readSD() {
+    FILE* usd_file_read = fopen("/usd/rec1.txt", "r");
 }
 
 //motor functions
