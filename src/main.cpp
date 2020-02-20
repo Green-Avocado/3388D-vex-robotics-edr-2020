@@ -47,10 +47,8 @@ int replayFrames = 750;
 int driveX[maxFrames];
 int driveY[maxFrames];
 int armX[maxFrames];
-int armY[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
-int trayY[maxFrames];
 
 //write file
 void writeSD() {
@@ -73,22 +71,12 @@ void writeSD() {
     fprintf(usd_file_write, "\n");
     for(int i = 0; i < replayFrames; i++)
     {
-        fprintf(usd_file_write, "%d ", *(armY + i));
-    }
-    fprintf(usd_file_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
         fprintf(usd_file_write, "%d ", *(intakeX + i));
     }
     fprintf(usd_file_write, "\n");
     for(int i = 0; i < replayFrames; i++)
     {
         fprintf(usd_file_write, "%d ", *(trayX + i));
-    }
-    fprintf(usd_file_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_file_write, "%d ", *(trayY + i));
     }
     fclose(usd_file_write);
 }
@@ -111,19 +99,11 @@ void readSD() {
     }
     for(int i = 0; i < replayFrames; i++)
     {
-        fscanf(usd_file_read, "%d", armY + i);
-    }
-    for(int i = 0; i < replayFrames; i++)
-    {
         fscanf(usd_file_read, "%d", intakeX + i);
     }
     for(int i = 0; i < replayFrames; i++)
     {
         fscanf(usd_file_read, "%d", trayX + i);
-    }
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fscanf(usd_file_read, "%d", trayY + i);
     }
     fclose(usd_file_read);
 }
@@ -146,19 +126,8 @@ void Fdrive(int x, int y) {
     }
 }
 
-void Farm(bool x, bool y) {
-    if(x)
-    {
-        arm.move(127 * armSpeed);
-    }
-    else if(y)
-    {
-        arm.move(-127 * armSpeed);
-    }
-    else
-    {
-        arm.move(0);
-    }
+void Farm(int x) {
+    arm.move(x * armSpeed);
 }
 
 void Fintake(int x) {
@@ -174,28 +143,32 @@ void Fintake(int x) {
     }
 }
 
-void Ftray(bool x, bool y) {
-    if(x)
-    {
-        tray.move(127 * traySpeed);
-    }
-    else if(y)
-    {
-        tray.move(-127 * traySpeed);
-    }
-    else
-    {
-        tray.move(0);
-    }
+void Ftray(int x) {
+    tray.move(x * traySpeed);
 }
 
 void replay() {
     for(int i = 0; i < replayFrames; i++) {
         Fdrive(driveX[i], driveY[i]);
-        Farm(armX[i], armY[i]);
+        Farm(armX[i]);
         Fintake(intakeX[i]);
-        Ftray(trayX[i], trayY[i]);
+        Ftray(trayX[i]);
         pros::delay(replayInterval);
+    }
+}
+
+int button_to_int(bool x, bool y) {
+    if(x)
+    {
+        return 127;
+    }
+    else if(y)
+    {
+        return -127;
+    }
+    else
+    {
+        return 0;
     }
 }
 
@@ -214,10 +187,8 @@ void initialize() {
       driveX[i] = 0;
       driveY[i] = 0;
       armX[i] = 0;
-      armY[i] = 0;
       intakeX[i] = 0;
       trayX[i] = 0;
-      trayY[i] = 0;
     }
 
     arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -277,9 +248,9 @@ void autonomous() {
 void opcontrol() {
 	while (true) {
         Fdrive(master.get_analog(ANALOG_LEFT_X), master.get_analog(ANALOG_LEFT_Y));
-        Farm(armUpButton.isPressed(), armDownButton.isPressed());
+        Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()));
         Fintake(master.get_analog(ANALOG_RIGHT_Y));
-        Ftray(trayUpButton.isPressed(), trayDownButton.isPressed());
+        Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()));
 
         //record inputs
         if(recordButton.isPressed())
@@ -288,8 +259,6 @@ void opcontrol() {
             {
                 int Xint;
                 int Yint;
-                bool Xbool;
-                bool Ybool;
 
                 Xint = master.get_analog(ANALOG_LEFT_X);
                 Yint = master.get_analog(ANALOG_LEFT_Y);
@@ -297,21 +266,17 @@ void opcontrol() {
                 driveX[i] = Xint;
                 driveY[i] = Yint;
 
-                Xbool = armUpButton.isPressed();
-                Ybool = armDownButton.isPressed();
-                Farm(Xbool, Ybool);
-                armX[i] = Xbool;
-                armY[i] = Ybool;
+                Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed());
+                Farm(Xint);
+                armX[i] = Xint;
 
                 Xint = master.get_analog(ANALOG_RIGHT_Y);
                 Fintake(Xint);
                 intakeX[i] = Xint;
 
-                Xbool = trayUpButton.isPressed();
-                Ybool = trayDownButton.isPressed();
-                Ftray(Xbool, Ybool);
-                trayX[i] = Xbool;
-                trayY[i] = Ybool;
+                Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
+                Ftray(Xint);
+                trayX[i] = Xint;
 
                 pros::delay(replayInterval);
             }
