@@ -44,6 +44,7 @@ ControllerButton readButton(ControllerDigital::Y);
 
 //replay memory
 int replayFrames = 750;
+int framesToRecord = 750;
 int driveX[maxFrames];
 int driveY[maxFrames];
 int armX[maxFrames];
@@ -52,6 +53,7 @@ int trayX[maxFrames];
 
 //write file
 void writeSD() {
+    master.set_text(0, 0, "Writing SD");
     FILE* usd_file_write = fopen("/usd/rec1.txt", "w");
     fprintf(usd_file_write, "%d\n", replayFrames);
     for(int i = 0; i < replayFrames; i++)
@@ -79,10 +81,14 @@ void writeSD() {
         fprintf(usd_file_write, "%d ", *(trayX + i));
     }
     fclose(usd_file_write);
+    master.set_text(1, 0, "Done");
+    pros::delay(200);
+    master.clear();
 }
 
 //read file
 void readSD() {
+    master.set_text(0, 0, "Reading SD");
     FILE* usd_file_read = fopen("/usd/rec1.txt", "r");
     fscanf(usd_file_read, "%d", &replayFrames);
     for(int i = 0; i < replayFrames; i++)
@@ -106,6 +112,10 @@ void readSD() {
         fscanf(usd_file_read, "%d", trayX + i);
     }
     fclose(usd_file_read);
+    master.clear();
+    master.set_text(1, 0, "Done");
+    pros::delay(200);
+    master.clear();
 }
 
 //motor functions
@@ -148,6 +158,7 @@ void Ftray(int x) {
 }
 
 void replay() {
+    master.set_text(0, 0, "Running Auton");
     for(int i = 0; i < replayFrames; i++) {
         Fdrive(driveX[i], driveY[i]);
         Farm(armX[i]);
@@ -155,6 +166,9 @@ void replay() {
         Ftray(trayX[i]);
         pros::delay(replayInterval);
     }
+    master.set_text(1, 0, "Done");
+    pros::delay(200);
+    master.clear();
 }
 
 int button_to_int(bool x, bool y) {
@@ -195,6 +209,8 @@ void initialize() {
     intakeLeft.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+    master.clear();
 
     //readSD();
 }
@@ -255,6 +271,7 @@ void opcontrol() {
         //record inputs
         if(recordButton.isPressed())
         {
+            master.set_text(0, 0, "Recording");
             for(int i = 0; i < replayFrames; i++)
             {
                 int Xint;
@@ -280,6 +297,9 @@ void opcontrol() {
 
                 pros::delay(replayInterval);
             }
+            master.set_text(1, 0, "Done");
+            pros::delay(200);
+            master.clear();
         }
 
         //replay
