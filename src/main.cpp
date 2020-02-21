@@ -42,7 +42,12 @@ ControllerButton readButton(ControllerDigital::Y);
 #define maxFrames 3000
 #define replayInterval 20
 
+//user interface
+int menuSelection = 0;
+int replaySlot = 0;
+
 //replay memory
+char filename[] = "/usd/rec0.txt";
 int replayFrames = 750;
 int framesToRecord = 750;
 int driveX[maxFrames];
@@ -54,7 +59,7 @@ int trayX[maxFrames];
 //write file
 void writeSD() {
     master.set_text(0, 0, "Writing SD");
-    FILE* usd_file_write = fopen("/usd/rec1.txt", "w");
+    FILE* usd_file_write = fopen(filename, "w");
     fprintf(usd_file_write, "%d\n", replayFrames);
     for(int i = 0; i < replayFrames; i++)
     {
@@ -89,7 +94,7 @@ void writeSD() {
 //read file
 void readSD() {
     master.set_text(0, 0, "Reading SD");
-    FILE* usd_file_read = fopen("/usd/rec1.txt", "r");
+    FILE* usd_file_read = fopen(filename, "r");
     fscanf(usd_file_read, "%d", &replayFrames);
     for(int i = 0; i < replayFrames; i++)
     {
