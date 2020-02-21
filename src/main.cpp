@@ -243,6 +243,7 @@ void Ftray(int x) {
 void record() {
     master.set_text(0, 0, "Recording");
     replayFrames = framesToRecord;
+    replayInterval = intervalToRecord;
     for(int i = 0; i < replayFrames; i++)
     {
         int Xint;
