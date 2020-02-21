@@ -46,7 +46,6 @@ ControllerButton menuBack(ControllerDigital::B);
 #define traySpeed 0.7
 #define minFrames 750
 #define maxFrames 3000
-#define replayInterval 20
 #define textDuration 200
 
 //user interface
@@ -57,7 +56,9 @@ int replaySlot = 0;
 //replay memory
 char filename[] = "/usd/rec0.txt";
 int replayFrames = minFrames;
+int replayInterval = 20;
 int framesToRecord = minFrames;
+int intervalToRecord = 20;
 int driveX[maxFrames];
 int driveY[maxFrames];
 int armX[maxFrames];
@@ -120,7 +121,7 @@ void menuChange(int change) {
 void writeSD() {
     master.set_text(0, 0, "Writing SD");
     FILE* usd_file_write = fopen(filename, "w");
-    fprintf(usd_file_write, "%d\n", replayFrames);
+    fprintf(usd_file_write, "%d %d\n", replayFrames, replayInterval);
     for(int i = 0; i < replayFrames; i++)
     {
         fprintf(usd_file_write, "%d ", *(driveX + i));
@@ -156,7 +157,7 @@ void writeSD() {
 void readSD() {
     master.set_text(0, 0, "Reading SD");
     FILE* usd_file_read = fopen(filename, "r");
-    fscanf(usd_file_read, "%d", &replayFrames);
+    fscanf(usd_file_read, "%d%d", &replayFrames, &replayInterval);
     for(int i = 0; i < replayFrames; i++)
     {
         fscanf(usd_file_read, "%d", driveX + i);
@@ -519,6 +520,6 @@ void opcontrol() {
         }
         */
 
-        pros::delay(replayInterval);
+        pros::delay(20);
 	}
 }
