@@ -29,32 +29,92 @@ ControllerButton trayDownButton(ControllerDigital::L2);
 ControllerButton armUpButton(ControllerDigital::R1);
 ControllerButton armDownButton(ControllerDigital::R2);
 
-ControllerButton recordButton(ControllerDigital::A);
-ControllerButton replayButton(ControllerDigital::B);
-ControllerButton writeButton(ControllerDigital::X);
-ControllerButton readButton(ControllerDigital::Y);
+//ControllerButton recordButton(ControllerDigital::A);
+//ControllerButton replayButton(ControllerDigital::B);
+//ControllerButton writeButton(ControllerDigital::X);
+//ControllerButton readButton(ControllerDigital::Y);
+
+ControllerButton menuUp(ControllerDigital::up);
+ControllerButton menuDown(ControllerDigital::down);
+ControllerButton menuForward(ControllerDigital::A);
+ControllerButton menuBack(ControllerDigital::B);
 
 //constants
 #define driveSpeed 0.8
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
+#define minFrames 750
 #define maxFrames 3000
 #define replayInterval 20
+#define textDuration 200
 
 //user interface
 int menuSelection = 0;
+int menuLevel = 0;
 int replaySlot = 0;
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
-int replayFrames = 750;
-int framesToRecord = 750;
+int replayFrames = minFrames;
+int framesToRecord = minFrames;
 int driveX[maxFrames];
 int driveY[maxFrames];
 int armX[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
+
+void menuPrint(int line, int selection) {
+    switch(selection)
+    {
+        case 0:
+            master.set_text(line, 2, "Read");
+            break;
+
+        case 1:
+            master.set_text(line, 2, "Write");
+            break;
+
+        case 2:
+            master.set_text(line, 2, "Record");
+            break;
+
+        case 3:
+            master.set_text(line, 2, "Replay");
+            break;
+
+        default:
+            master.set_text(line, 2, "ERROR");
+            break;
+    }
+}
+
+void replayPrint(int line, int selection) {
+    master.print(line, 2, "Slot %d", selection);
+}
+
+void menuChange(int change) {
+    master.clear();
+    master.set_text(2, 0, ">");
+    if(menuLevel == 0)
+    {
+        menuSelection += change;
+        menuSelection = menuSelection % 4;
+        for(int i = -1; i < 2; i++)
+        {
+            menuPrint(i + 1, (menuSelection + i) % 4);
+        }
+    }
+    else if(menuLevel == 1)
+    {
+        replaySlot += change;
+        replaySlot = replaySlot % 10;
+        for(int i = -1; i < 2; i++)
+        {
+            replayPrint(i + 1, (replaySlot + i) % 10);
+        }
+    }
+}
 
 //write file
 void writeSD() {
@@ -87,8 +147,9 @@ void writeSD() {
     }
     fclose(usd_file_write);
     master.set_text(1, 0, "Done");
-    pros::delay(200);
-    master.clear();
+    pros::delay(textDuration);
+    menuLevel = 0;
+    menuChange(0);
 }
 
 //read file
@@ -117,10 +178,26 @@ void readSD() {
         fscanf(usd_file_read, "%d", trayX + i);
     }
     fclose(usd_file_read);
-    master.clear();
     master.set_text(1, 0, "Done");
-    pros::delay(200);
-    master.clear();
+    pros::delay(textDuration);
+    menuLevel = 0;
+    menuChange(0);
+}
+
+//interpret button presses
+int button_to_int(bool x, bool y) {
+    if(x)
+    {
+        return 127;
+    }
+    else if(y)
+    {
+        return -127;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 //motor functions
@@ -162,6 +239,40 @@ void Ftray(int x) {
     tray.move(x);
 }
 
+void record() {
+    master.set_text(0, 0, "Recording");
+    replayFrames = framesToRecord;
+    for(int i = 0; i < replayFrames; i++)
+    {
+        int Xint;
+        int Yint;
+
+        Xint = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
+        Yint = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
+        Fdrive(Xint, Yint);
+        driveX[i] = Xint;
+        driveY[i] = Yint;
+
+        Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed;
+        Farm(Xint);
+        armX[i] = Xint;
+
+        Xint = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
+        Fintake(Xint);
+        intakeX[i] = Xint;
+
+        Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed;
+        Ftray(Xint);
+        trayX[i] = Xint;
+
+        pros::delay(replayInterval);
+    }
+    master.set_text(1, 0, "Done");
+    pros::delay(textDuration);
+    menuLevel = 0;
+    menuChange(0);
+}
+
 void replay() {
     master.set_text(0, 0, "Running Auton");
     for(int i = 0; i < replayFrames; i++) {
@@ -172,22 +283,34 @@ void replay() {
         pros::delay(replayInterval);
     }
     master.set_text(1, 0, "Done");
-    pros::delay(200);
-    master.clear();
+    pros::delay(textDuration);
+    menuLevel = 0;
+    menuChange(0);
 }
 
-int button_to_int(bool x, bool y) {
-    if(x)
+void levelChange(int change) {
+    if(change == -1)
     {
-        return 127;
-    }
-    else if(y)
-    {
-        return -127;
+        if(menuLevel > 0)
+        {
+            menuLevel += change;
+            menuChange(0);
+        }
     }
     else
     {
-        return 0;
+        if(menuLevel == 1)
+        {
+            sprintf(filename, "/usd/rec%d.txt", replaySlot);
+            if(menuSelection == 0)
+            {
+                readSD();
+            }
+            else
+            {
+                writeSD();
+            }
+        }
     }
 }
 
@@ -215,7 +338,7 @@ void initialize() {
     intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
-    master.clear();
+    menuChange(0);
 
     //readSD();
 }
@@ -267,45 +390,62 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+    bool menuUpNew = true;
+    bool menuDownNew = true;
+    bool menuForwardNew = true;
+    bool menuBackNew = true;
 	while (true) {
         Fdrive(master.get_analog(ANALOG_LEFT_X) * driveSpeed, master.get_analog(ANALOG_LEFT_Y) * driveSpeed);
         Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
         Fintake(master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed);
         Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed);
 
+        //UI management
+        if(menuUp.isPressed())
+        {
+            if(menuUpNew)
+            {
+                menuChange(1);
+                menuUpNew = false;
+            }
+        }
+        else menuUpNew = true;
+
+        if(menuDown.isPressed())
+        {
+            if(menuDownNew)
+            {
+                menuChange(-1);
+                menuDownNew = false;
+            }
+        }
+        else menuDownNew = true;
+
+        if(menuForward.isPressed())
+        {
+            if(menuForwardNew)
+            {
+                levelChange(1);
+                menuForwardNew = false;
+            }
+        }
+        else menuForwardNew = true;
+
+        if(menuBack.isPressed())
+        {
+            if(menuBackNew)
+            {
+                levelChange(-1);
+                menuBackNew = false;
+            }
+        }
+        else menuBackNew = true;
+
+        /*
         //record inputs
         if(recordButton.isPressed())
         {
-            master.set_text(0, 0, "Recording");
-            replayFrames = framesToRecord;
-            for(int i = 0; i < replayFrames; i++)
-            {
-                int Xint;
-                int Yint;
-
-                Xint = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
-                Yint = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
-                Fdrive(Xint, Yint);
-                driveX[i] = Xint;
-                driveY[i] = Yint;
-
-                Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed;
-                Farm(Xint);
-                armX[i] = Xint;
-
-                Xint = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
-                Fintake(Xint);
-                intakeX[i] = Xint;
-
-                Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed;
-                Ftray(Xint);
-                trayX[i] = Xint;
-
-                pros::delay(replayInterval);
-            }
-            master.set_text(1, 0, "Done");
-            pros::delay(200);
-            master.clear();
+            record();
         }
 
         //replay
@@ -325,6 +465,7 @@ void opcontrol() {
         {
             readSD();
         }
+        */
 
         /* OLD CONTROLS
         //drivetrain arcade movement
