@@ -50,6 +50,13 @@ int menuSelection = 0;
 int menuLevel = 0;
 int replaySlot = 0;
 int settingsSlot = 0;
+const char *menuItemNames[] = {
+    "Read            ",
+    "Write           ",
+    "Record          ",
+    "Replay          ",
+    "Settings        ",
+};
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
@@ -80,32 +87,7 @@ void screenClear()
 void menuPrint(int line, int selection)
 {
     pros::delay(textUpdateBuffer);
-    switch(selection)
-    {
-        case 0:
-            master.set_text(line, 2, "Read            ");
-            break;
-
-        case 1:
-            master.set_text(line, 2, "Write           ");
-            break;
-
-        case 2:
-            master.set_text(line, 2, "Record          ");
-            break;
-
-        case 3:
-            master.set_text(line, 2, "Replay          ");
-            break;
-
-        case 4:
-            master.set_text(line, 2, "Settings        ");
-            break;
-
-        default:
-            master.set_text(line, 2, "ERROR           ");
-            break;
-    }
+    master.print(line, 2, "%s", menuItemNames[selection]);
 }
 
 void replayPrint(int line, int selection)
