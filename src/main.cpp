@@ -1,6 +1,6 @@
 #include "main.h"
 #include <cmath>
-using namespace okapi;
+//using namespace okapi;
 
 //drive declaration
 /*
@@ -21,23 +21,23 @@ pros::Motor tray(6, 1);
 
 //controller declarations
 //Controller masterController;
-pros::Controller master (CONTROLLER_MASTER);
+pros::Controller master (pros::E_CONTROLLER_MASTER);
 
-ControllerButton trayUpButton(ControllerDigital::L1);
-ControllerButton trayDownButton(ControllerDigital::L2);
+okapi::ControllerButton trayUpButton(okapi::ControllerDigital::L1);
+okapi::ControllerButton trayDownButton(okapi::ControllerDigital::L2);
 
-ControllerButton armUpButton(ControllerDigital::R1);
-ControllerButton armDownButton(ControllerDigital::R2);
+okapi::ControllerButton armUpButton(okapi::ControllerDigital::R1);
+okapi::ControllerButton armDownButton(okapi::ControllerDigital::R2);
 
 //ControllerButton recordButton(ControllerDigital::A);
 //ControllerButton replayButton(ControllerDigital::B);
 //ControllerButton writeButton(ControllerDigital::X);
 //ControllerButton readButton(ControllerDigital::Y);
 
-ControllerButton menuUp(ControllerDigital::up);
-ControllerButton menuDown(ControllerDigital::down);
-ControllerButton menuForward(ControllerDigital::A);
-ControllerButton menuBack(ControllerDigital::B);
+okapi::ControllerButton menuUp(okapi::ControllerDigital::up);
+okapi::ControllerButton menuDown(okapi::ControllerDigital::down);
+okapi::ControllerButton menuForward(okapi::ControllerDigital::A);
+okapi::ControllerButton menuBack(okapi::ControllerDigital::B);
 
 //constants
 #define driveSpeed 0.8
@@ -66,59 +66,68 @@ int intakeX[maxFrames];
 int trayX[maxFrames];
 
 void menuPrint(int line, int selection) {
+    pros::delay(60);
+    master.clear_line(line);
+    pros::delay(60);
     switch(selection)
     {
         case 0:
-            master.set_text(line, 2, "Read");
+            master.set_text(line, 2, "Read            ");
             break;
 
         case 1:
-            master.set_text(line, 2, "Write");
+            master.set_text(line, 2, "Write           ");
             break;
 
         case 2:
-            master.set_text(line, 2, "Record");
+            master.set_text(line, 2, "Record          ");
             break;
 
         case 3:
-            master.set_text(line, 2, "Replay");
+            master.set_text(line, 2, "Replay          ");
             break;
 
         default:
-            master.set_text(line, 2, "ERROR");
+            master.set_text(line, 2, "ERROR           ");
             break;
     }
 }
 
 void replayPrint(int line, int selection) {
+    pros::delay(60);
     master.print(line, 2, "Slot %d", selection);
 }
 
 void menuChange(int change) {
+    pros::delay(60);
     master.clear();
-    master.set_text(2, 0, ">");
+    pros::delay(60);
+    master.set_text(1, 0, ">");
     if(menuLevel == 0)
     {
         menuSelection += change;
-        menuSelection = menuSelection % 4;
+        if(menuSelection < 0) menuSelection += 4;
+        else if(menuSelection > 3) menuSelection += -4;
         for(int i = -1; i < 2; i++)
         {
-            menuPrint(i + 1, (menuSelection + i) % 4);
+            menuPrint(i + 1, (menuSelection + i + 4) % 4);
         }
     }
     else if(menuLevel == 1)
     {
         replaySlot += change;
-        replaySlot = replaySlot % 10;
+        if(replaySlot < 0) replaySlot += 10;
+        else if(replaySlot > 9) replaySlot += -10;
         for(int i = -1; i < 2; i++)
         {
-            replayPrint(i + 1, (replaySlot + i) % 10);
+            replayPrint(i + 1, (replaySlot + i + 10) % 10);
         }
     }
 }
 
 //write file
 void writeSD() {
+    pros::delay(60);
     master.set_text(0, 0, "Writing SD");
     FILE* usd_file_write = fopen(filename, "w");
     fprintf(usd_file_write, "%d %d\n", replayFrames, replayInterval);
@@ -147,6 +156,7 @@ void writeSD() {
         fprintf(usd_file_write, "%d ", *(trayX + i));
     }
     fclose(usd_file_write);
+    pros::delay(60);
     master.set_text(1, 0, "Done");
     pros::delay(textDuration);
     menuLevel = 0;
@@ -155,6 +165,7 @@ void writeSD() {
 
 //read file
 void readSD() {
+    pros::delay(60);
     master.set_text(0, 0, "Reading SD");
     FILE* usd_file_read = fopen(filename, "r");
     fscanf(usd_file_read, "%d%d", &replayFrames, &replayInterval);
@@ -179,6 +190,7 @@ void readSD() {
         fscanf(usd_file_read, "%d", trayX + i);
     }
     fclose(usd_file_read);
+    pros::delay(60);
     master.set_text(1, 0, "Done");
     pros::delay(textDuration);
     menuLevel = 0;
@@ -241,34 +253,28 @@ void Ftray(int x) {
 }
 
 void record() {
+    pros::delay(60);
     master.set_text(0, 0, "Recording");
     replayFrames = framesToRecord;
     replayInterval = intervalToRecord;
     for(int i = 0; i < replayFrames; i++)
     {
-        int Xint;
-        int Yint;
+        driveX[i] = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
+        driveY[i] = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
+        Fdrive(driveX[i], driveY[i]);
 
-        Xint = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
-        Yint = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
-        Fdrive(Xint, Yint);
-        driveX[i] = Xint;
-        driveY[i] = Yint;
+        armX[i] = button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed;
+        Farm(armX[i]);
 
-        Xint = button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed;
-        Farm(Xint);
-        armX[i] = Xint;
+        intakeX[i] = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
+        Fintake(intakeX[i]);
 
-        Xint = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
-        Fintake(Xint);
-        intakeX[i] = Xint;
-
-        Xint = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed;
-        Ftray(Xint);
-        trayX[i] = Xint;
+        trayX[i] = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
+        Ftray(trayX[i]);
 
         pros::delay(replayInterval);
     }
+    pros::delay(60);
     master.set_text(1, 0, "Done");
     pros::delay(textDuration);
     menuLevel = 0;
@@ -276,6 +282,7 @@ void record() {
 }
 
 void replay() {
+    pros::delay(60);
     master.set_text(0, 0, "Running Auton");
     for(int i = 0; i < replayFrames; i++) {
         Fdrive(driveX[i], driveY[i]);
@@ -284,6 +291,7 @@ void replay() {
         Ftray(trayX[i]);
         pros::delay(replayInterval);
     }
+    pros::delay(60);
     master.set_text(1, 0, "Done");
     pros::delay(textDuration);
     menuLevel = 0;
@@ -301,7 +309,12 @@ void levelChange(int change) {
     }
     else
     {
-        if(menuLevel == 1)
+        if(menuLevel == 0)
+        {
+            menuLevel += change;
+            menuChange(0);
+        }
+        else if(menuLevel == 1)
         {
             sprintf(filename, "/usd/rec%d.txt", replaySlot);
             if(menuSelection == 0)
