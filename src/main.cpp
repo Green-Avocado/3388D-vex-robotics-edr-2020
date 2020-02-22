@@ -38,6 +38,8 @@ okapi::ControllerButton menuUp(okapi::ControllerDigital::up);
 okapi::ControllerButton menuDown(okapi::ControllerDigital::down);
 okapi::ControllerButton menuForward(okapi::ControllerDigital::A);
 okapi::ControllerButton menuBack(okapi::ControllerDigital::B);
+okapi::ControllerButton valueInc(okapi::ControllerDigital::right);
+okapi::ControllerButton valueDec(okapi::ControllerDigital::left);
 
 //constants
 #define driveSpeed 0.8
@@ -47,11 +49,14 @@ okapi::ControllerButton menuBack(okapi::ControllerDigital::B);
 #define minFrames 750
 #define maxFrames 3000
 #define textDuration 200
+#define menuItems 5
+#define saveSlots 10
 
 //user interface
 int menuSelection = 0;
 int menuLevel = 0;
 int replaySlot = 0;
+int settingsSlot = 0;
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
@@ -65,9 +70,21 @@ int armX[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
 
-void menuPrint(int line, int selection) {
+void lineClear(int line)
+{
     pros::delay(60);
-    master.clear_line(line);
+    master.set_text(line, 0, "                ");
+    pros::delay(60);
+}
+
+void screenClear()
+{
+    lineClear(0);
+    lineClear(1);
+    lineClear(2);
+}
+
+void menuPrint(int line, int selection) {
     pros::delay(60);
     switch(selection)
     {
@@ -87,6 +104,10 @@ void menuPrint(int line, int selection) {
             master.set_text(line, 2, "Replay          ");
             break;
 
+        case 4:
+            master.set_text(line, 2, "Settings        ");
+            break;
+
         default:
             master.set_text(line, 2, "ERROR           ");
             break;
@@ -99,35 +120,45 @@ void replayPrint(int line, int selection) {
 }
 
 void menuChange(int change) {
-    pros::delay(60);
-    master.clear();
-    pros::delay(60);
+    screenClear();
     master.set_text(1, 0, ">");
     if(menuLevel == 0)
     {
         menuSelection += change;
-        if(menuSelection < 0) menuSelection += 4;
-        else if(menuSelection > 3) menuSelection += -4;
+        if(menuSelection < 0) menuSelection += menuItems;
+        else if(menuSelection > menuItems - 1) menuSelection += -menuItems;
         for(int i = -1; i < 2; i++)
         {
-            menuPrint(i + 1, (menuSelection + i + 4) % 4);
+            menuPrint(i + 1, (menuSelection + i + menuItems) % menuItems);
         }
     }
     else if(menuLevel == 1)
     {
         replaySlot += change;
-        if(replaySlot < 0) replaySlot += 10;
-        else if(replaySlot > 9) replaySlot += -10;
+        if(replaySlot < 0) replaySlot += saveSlots;
+        else if(replaySlot > saveSlots - 1) replaySlot += -saveSlots;
         for(int i = -1; i < 2; i++)
         {
-            replayPrint(i + 1, (replaySlot + i + 10) % 10);
+            replayPrint(i + 1, (replaySlot + i + saveSlots) % saveSlots);
         }
+    }
+    else if(menuLevel == 2)
+    {
+        screenClear();
+        master.print(0, 2, "Frames: %d", framesToRecord);
+        master.print(1, 2, "Interval: %d", intervalToRecord);
+        if(change != 0)
+        {
+            if(settingsSlot == 0) settingsSlot = 1;
+            else settingsSlot = 0;
+        }
+        master.print(settingsSlot, 0, ">");
     }
 }
 
 //write file
 void writeSD() {
-    pros::delay(60);
+    screenClear();
     master.set_text(0, 0, "Writing SD");
     FILE* usd_file_write = fopen(filename, "w");
     fprintf(usd_file_write, "%d %d\n", replayFrames, replayInterval);
@@ -165,7 +196,7 @@ void writeSD() {
 
 //read file
 void readSD() {
-    pros::delay(60);
+    screenClear();
     master.set_text(0, 0, "Reading SD");
     FILE* usd_file_read = fopen(filename, "r");
     fscanf(usd_file_read, "%d%d", &replayFrames, &replayInterval);
@@ -253,7 +284,7 @@ void Ftray(int x) {
 }
 
 void record() {
-    pros::delay(60);
+    screenClear();
     master.set_text(0, 0, "Recording");
     replayFrames = framesToRecord;
     replayInterval = intervalToRecord;
@@ -282,7 +313,7 @@ void record() {
 }
 
 void replay() {
-    pros::delay(60);
+    screenClear();
     master.set_text(0, 0, "Running Auton");
     for(int i = 0; i < replayFrames; i++) {
         Fdrive(driveX[i], driveY[i]);
@@ -303,7 +334,7 @@ void levelChange(int change) {
     {
         if(menuLevel > 0)
         {
-            menuLevel += change;
+            menuLevel = 0;
             menuChange(0);
         }
     }
@@ -311,20 +342,61 @@ void levelChange(int change) {
     {
         if(menuLevel == 0)
         {
-            menuLevel += change;
-            menuChange(0);
+            if(menuSelection == 0 || menuSelection == 1)
+            {
+                menuLevel = 1;
+                menuChange(0);
+            }
+            else if(menuSelection == 2 || menuSelection == 3)
+            {
+                switch(menuSelection)
+                {
+                    case 2:
+                        record();
+                        break;
+
+                    case 3:
+                        replay();
+                        break;
+                }
+            }
+            else if(menuSelection == 4)
+            {
+                menuLevel = 2;
+                settingsSlot = 0;
+                menuChange(0);
+            }
         }
         else if(menuLevel == 1)
         {
             sprintf(filename, "/usd/rec%d.txt", replaySlot);
-            if(menuSelection == 0)
+            switch(menuSelection)
             {
-                readSD();
+                case 0:
+                    readSD();
+                    break;
+
+                case 1:
+                    writeSD();
+                    break;
             }
-            else
-            {
-                writeSD();
-            }
+        }
+    }
+}
+
+void valueChange(int change)
+{
+    if(menuLevel == 2);
+    {
+        if(settingsSlot == 0)
+        {
+            if(framesToRecord + 10 * change > 0) framesToRecord += 10 * change;
+            menuChange(0);
+        }
+        else
+        {
+            if(intervalToRecord + change > 0) intervalToRecord += change;
+            menuChange(0);
         }
     }
 }
@@ -409,6 +481,8 @@ void opcontrol() {
     bool menuDownNew = true;
     bool menuForwardNew = true;
     bool menuBackNew = true;
+    bool valueIncNew = true;
+    bool valueDecNew = true;
 	while (true) {
         Fdrive(master.get_analog(ANALOG_LEFT_X) * driveSpeed, master.get_analog(ANALOG_LEFT_Y) * driveSpeed);
         Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
@@ -455,6 +529,26 @@ void opcontrol() {
             }
         }
         else menuBackNew = true;
+
+        if(valueInc.isPressed())
+        {
+            if(valueIncNew)
+            {
+                valueChange(1);
+                valueIncNew = false;
+            }
+        }
+        else valueIncNew = true;
+
+        if(valueDec.isPressed())
+        {
+            if(valueDecNew)
+            {
+                valueChange(-1);
+                valueDecNew = false;
+            }
+        }
+        else valueDecNew = true;
 
         /*
         //record inputs
