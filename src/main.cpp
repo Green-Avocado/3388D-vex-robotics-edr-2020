@@ -393,19 +393,20 @@ void levelChange(int change)
 
 void valueChange(int change)
 {
+    int delta = 1;
+    int *subject;
     if(menuLevel == 2);
     {
-        if(settingsSlot == 0)
-        {
-            if(framesToRecord + 10 * change > 0) framesToRecord += 10 * change;
-            menuChange(0);
-        }
-        else
-        {
-            if(intervalToRecord + change > 0) intervalToRecord += change;
-            menuChange(0);
-        }
+        if(settingsSlot == 0) subject = &framesToRecord;
+        else subject = &intervalToRecord;
     }
+    do
+    {
+        if(*subject + delta > 0) *subject += delta;
+        menuChange(0);
+        if(delta < 50) delta += 1;
+        pros::delay(200);
+    } while((valueInc.isPressed() && change > 0) || (valueDec.isPressed() && change < 0));
 }
 
 /**
