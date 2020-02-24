@@ -62,7 +62,7 @@ const char *menuItemNames[] = {
 char filename[] = "/usd/rec0.txt";
 int replayFrames = minFrames;
 int replayInterval = 20;
-int framesToRecord = minFrames;
+int framesToRecord = replayFrames;
 int intervalToRecord = 20;
 int driveX[maxFrames];
 int driveY[maxFrames];
@@ -384,7 +384,7 @@ void valueChange(int change)
     }
     do
     {
-        if(*subject + delta > 0) *subject += delta;
+        if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta;
         menuChange(0);
         if(delta < 50) delta += 1;
         pros::delay(200);
