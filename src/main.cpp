@@ -28,7 +28,7 @@ okapi::ControllerButton valueInc(okapi::ControllerDigital::right);
 okapi::ControllerButton valueDec(okapi::ControllerDigital::left);
 
 //speed factors
-#define driveSpeed 0.8
+#define driveSpeed 1
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
@@ -425,14 +425,14 @@ void valueChange(int change)
     {
         if(settingsSlot == 0) subject = &framesToRecord;
         else subject = &intervalToRecord;
+        do
+        {
+            if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta;
+            menuChange(0);
+            if(delta < 50) delta += 1;
+            pros::delay(200);
+        } while((valueInc.isPressed() && change > 0) || (valueDec.isPressed() && change < 0));
     }
-    do
-    {
-        if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta;
-        menuChange(0);
-        if(delta < 50) delta += 1;
-        pros::delay(200);
-    } while((valueInc.isPressed() && change > 0) || (valueDec.isPressed() && change < 0));
 }
 
 /**
