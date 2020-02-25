@@ -71,6 +71,10 @@ int driveY[maxFrames];
 int armX[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
+int timerSec;
+int timerTenth;
+int timerMS;
+int alignSpacing;
 
 //screen functions
 void lineClear(int line)
@@ -272,13 +276,28 @@ void Ftray(int x)
 }
 
 //rerun functions
+void updateTimers()
+{
+    timerMS -= replayInterval;
+    timerSec = timerMS / 1000;
+    timerTenth = (timerMS % 1000) / 100;
+    alignSpacing = 6 - (timerSec / 10);
+}
+
 void record()
 {
     screenClear();
     master.set_text(0, 0, "Recording...");
+    pros::delay(textUpdateBuffer);
+
     replayFrames = framesToRecord;
     replayInterval = intervalToRecord;
     replayVersion = recordVersion;
+
+    timerMS = replayFrames * replayInterval;
+    updateTimers();
+    master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+
     for(int i = 0; i < replayFrames; i++)
     {
         driveX[i] = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
@@ -293,6 +312,10 @@ void record()
 
         trayX[i] = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
         Ftray(trayX[i]);
+
+        updateTimers();
+        if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
+            master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
 
         pros::delay(replayInterval);
     }
@@ -309,6 +332,11 @@ void replay()
     master.set_text(0, 0, "Running");
     pros::delay(textUpdateBuffer);
     master.set_text(1, 0, "Autonomous...");
+
+    timerMS = replayFrames * replayInterval;
+    updateTimers();
+    master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+
     if(replayVersion == 'A')
     {
         for(int i = 0; i < replayFrames; i++)
@@ -317,6 +345,11 @@ void replay()
             Farm(armX[i]);
             Fintake(intakeX[i]);
             Ftray(trayX[i]);
+
+            updateTimers();
+            if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
+                master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+
             pros::delay(replayInterval);
         }
     }
