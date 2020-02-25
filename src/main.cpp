@@ -60,6 +60,8 @@ const char *menuItemNames[] = {
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
+char replayVersion = 'A';
+char recordVersion = 'A';
 int replayFrames = minFrames;
 int replayInterval = 20;
 int framesToRecord = replayFrames;
@@ -139,7 +141,7 @@ void writeSD()
     screenClear();
     master.set_text(0, 0, "Writing SD...");
     FILE* usd_file_write = fopen(filename, "w");
-    fprintf(usd_file_write, "%d %d\n", replayFrames, replayInterval);
+    fprintf(usd_file_write, "%c %d %d\n", replayVersion, replayFrames, replayInterval);
     for(int i = 0; i < replayFrames; i++)
     {
         fprintf(usd_file_write, "%d ", *(driveX + i));
@@ -177,7 +179,7 @@ void readSD()
     screenClear();
     master.set_text(0, 0, "Reading SD...");
     FILE* usd_file_read = fopen(filename, "r");
-    fscanf(usd_file_read, "%d%d", &replayFrames, &replayInterval);
+    fscanf(usd_file_read, "%c%d%d", &replayVersion, &replayFrames, &replayInterval);
     for(int i = 0; i < replayFrames; i++)
     {
         fscanf(usd_file_read, "%d", driveX + i);
@@ -272,6 +274,7 @@ void record()
     master.set_text(0, 0, "Recording...");
     replayFrames = framesToRecord;
     replayInterval = intervalToRecord;
+    replayVersion = recordVersion;
     for(int i = 0; i < replayFrames; i++)
     {
         driveX[i] = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
@@ -302,13 +305,16 @@ void replay()
     master.set_text(0, 0, "Running");
     pros::delay(textUpdateBuffer);
     master.set_text(1, 0, "Autonomous...");
-    for(int i = 0; i < replayFrames; i++)
+    if(replayVersion == 'A')
     {
-        Fdrive(driveX[i], driveY[i]);
-        Farm(armX[i]);
-        Fintake(intakeX[i]);
-        Ftray(trayX[i]);
-        pros::delay(replayInterval);
+        for(int i = 0; i < replayFrames; i++)
+        {
+            Fdrive(driveX[i], driveY[i]);
+            Farm(armX[i]);
+            Fintake(intakeX[i]);
+            Ftray(trayX[i]);
+            pros::delay(replayInterval);
+        }
     }
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
