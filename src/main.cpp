@@ -60,8 +60,8 @@ const char *menuItemNames[] = {
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
-char replayVersion = 'A';
 char recordVersion = 'A';
+char replayVersion = recordVersion;
 int replayFrames = minFrames;
 int replayInterval = 20;
 int framesToRecord = replayFrames;
@@ -72,6 +72,7 @@ int armX[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
 
+//screen functions
 void lineClear(int line)
 {
     pros::delay(textUpdateBuffer);
@@ -86,6 +87,7 @@ void screenClear()
     lineClear(2);
 }
 
+//menu functions
 void menuPrint(int line, int selection)
 {
     pros::delay(textUpdateBuffer);
@@ -136,6 +138,7 @@ void menuChange(int change)
     }
 }
 
+//file functions
 void writeSD()
 {
     screenClear();
@@ -268,6 +271,7 @@ void Ftray(int x)
     tray.move(x);
 }
 
+//rerun functions
 void record()
 {
     screenClear();
@@ -323,6 +327,7 @@ void replay()
     menuChange(0);
 }
 
+//UI management
 void levelChange(int change)
 {
     if(change == -1)
@@ -407,8 +412,6 @@ void initialize()
 {
 	pros::lcd::initialize();
 
-    //driveLeft.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
-    //driveRight.setBrakeMode(okapi::AbstractMotor::brakeMode::hold);
     for(int i = 0; i < maxFrames; i++)
     {
       driveX[i] = 0;
