@@ -441,6 +441,15 @@ void changeFramesByTime(int seconds)
     }
 }
 
+void setFramesByTime(int seconds)
+{
+    int newFrameCount = seconds * 1000 / intervalToRecord;
+    if(newFrameCount >= minFrames && newFrameCount <= maxFrames)
+    {
+        framesToRecord = newFrameCount;
+    }
+}
+
 void valueChange(int change)
 {
     if(menuLevel == 2);
@@ -462,7 +471,9 @@ void valueChange(int change)
             {
                 if(intervalToRecord + 5 * change > 0)
                 {
+                    int currentTime = framesToRecord*intervalToRecord/1000;
                     intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
+                    setFramesByTime(currentTime);
                 }
             }
             menuChange(0);
@@ -635,4 +646,3 @@ void opcontrol()
         pros::delay(20);
 	}
 }
-
