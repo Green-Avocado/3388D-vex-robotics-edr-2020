@@ -188,31 +188,43 @@ void readSD()
 {
     screenClear();
     master.set_text(0, 0, "Reading SD...");
-    FILE* usd_file_read = fopen(filename, "r");
-    fscanf(usd_file_read, "%c%d%d", &replayVersion, &replayFrames, &replayInterval);
-    for(int i = 0; i < replayFrames; i++)
+    if(FILE* usd_file_read = fopen(filename, "r"))
     {
-        fscanf(usd_file_read, "%d", driveX + i);
+        fscanf(usd_file_read, "%c%d%d", &replayVersion, &replayFrames, &replayInterval);
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", driveX + i);
+        }
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", driveY + i);
+        }
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", armX + i);
+        }
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", intakeX + i);
+        }
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", trayX + i);
+        }
+        fclose(usd_file_read);
+        pros::delay(textUpdateBuffer);
+        master.set_text(2, 0, "Done");
     }
-    for(int i = 0; i < replayFrames; i++)
+    else
     {
-        fscanf(usd_file_read, "%d", driveY + i);
+        pros::delay(textUpdateBuffer);
+        master.set_text(2, 0, "Does Not Exist!");
     }
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fscanf(usd_file_read, "%d", armX + i);
-    }
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fscanf(usd_file_read, "%d", intakeX + i);
-    }
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fscanf(usd_file_read, "%d", trayX + i);
-    }
-    fclose(usd_file_read);
-    pros::delay(textUpdateBuffer);
-    master.set_text(2, 0, "Done");
     pros::delay(textDuration);
     menuLevel = 0;
     menuChange(0);
@@ -623,3 +635,4 @@ void opcontrol()
         pros::delay(20);
 	}
 }
+
