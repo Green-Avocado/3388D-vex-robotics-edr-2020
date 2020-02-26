@@ -26,6 +26,7 @@ okapi::ControllerButton menuForward(okapi::ControllerDigital::A);
 okapi::ControllerButton menuBack(okapi::ControllerDigital::B);
 okapi::ControllerButton valueInc(okapi::ControllerDigital::right);
 okapi::ControllerButton valueDec(okapi::ControllerDigital::left);
+okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 
 //speed factors
 #define driveSpeed 1
@@ -71,10 +72,14 @@ int driveY[maxFrames];
 int armX[maxFrames];
 int intakeX[maxFrames];
 int trayX[maxFrames];
+int stackingX[maxFrames];
 int timerSec;
 int timerTenth;
 int timerMS;
 int alignSpacing;
+
+//control based
+int stacking = 0;
 
 //screen functions
 void lineClear(int line)
@@ -176,6 +181,11 @@ void writeSD()
     {
         fprintf(usd_file_write, "%d ", *(trayX + i));
     }
+    fprintf(usd_file_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_file_write, "%d ", *(stackingX + i));
+    }
     fclose(usd_file_write);
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
@@ -216,6 +226,11 @@ void readSD()
         {
             fscanf(usd_file_read, "%d", trayX + i);
         }
+        fscanf(usd_file_read, "\n");
+        for(int i = 0; i < replayFrames; i++)
+        {
+            fscanf(usd_file_read, "%d", stackingX + i);
+        }
         fclose(usd_file_read);
         pros::delay(textUpdateBuffer);
         master.set_text(2, 0, "Done");
@@ -247,11 +262,19 @@ int button_to_int(bool x, bool y)
     }
 }
 
+void setStacking(int stackVal) {
+    stacking = stackVal;
+}
+
 //motor functions
 void Fdrive(int x, int y)
 {
     if(abs(y + x) > 3)
     {
+        if (stacking == 1) {
+            intakeLeft.move(y * 27 / 10);
+            intakeRight.move(y * 27 / 10);
+        }
         driveLeft1.move((y + x) / 2);
         driveLeft2.move((y + x) / 2);
         driveRight1.move((y - x) / 2);
@@ -259,6 +282,10 @@ void Fdrive(int x, int y)
     }
     else
     {
+        if (stacking == 1) {
+            intakeLeft.move(0);
+            intakeRight.move(0);
+        }
         driveLeft1.move(0);
         driveLeft2.move(0);
         driveRight1.move(0);
@@ -273,15 +300,18 @@ void Farm(int x)
 
 void Fintake(int x)
 {
-    if(abs(x) > 3)
+    if (stacking == 0)
     {
-        intakeLeft.move(x);
-        intakeRight.move(x);
-    }
-    else
-    {
-        intakeLeft.move(0);
-        intakeRight.move(0);
+        if(abs(x) > 3)
+        {
+            intakeLeft.move(x);
+            intakeRight.move(x);
+        }
+        else
+        {
+            intakeLeft.move(0);
+            intakeRight.move(0);
+        }
     }
 }
 
@@ -315,6 +345,9 @@ void record()
 
     for(int i = 0; i < replayFrames; i++)
     {
+        stackingX[i] = stackingButton.isPressed();
+        setStacking(stackingX[i]);
+
         driveX[i] = master.get_analog(ANALOG_LEFT_X) * driveSpeed;
         driveY[i] = master.get_analog(ANALOG_LEFT_Y) * driveSpeed;
         Fdrive(driveX[i], driveY[i]);
@@ -356,6 +389,7 @@ void replay()
     {
         for(int i = 0; i < replayFrames; i++)
         {
+            setStacking(stackingX[i]);
             Fdrive(driveX[i], driveY[i]);
             Farm(armX[i]);
             Fintake(intakeX[i]);
@@ -577,6 +611,7 @@ void opcontrol()
 	while (true)
     {
         //user controls
+        setStacking(stackingButton.isPressed());
         Fdrive(master.get_analog(ANALOG_LEFT_X) * driveSpeed, master.get_analog(ANALOG_LEFT_Y) * driveSpeed);
         Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
         Fintake(master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed);
