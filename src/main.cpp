@@ -420,33 +420,42 @@ void levelChange(int change)
     }
 }
 
+void changeFramesByTime(int seconds)
+{
+    framesToRecord += seconds*1000/intervalToRecord;
+    if(framesToRecord > maxFrames || framesToRecord < minFrames)
+    {
+        framesToRecord -= seconds*1000/intervalToRecord;
+    }
+}
+
 void valueChange(int change)
 {
     if(menuLevel == 2);
     {
-        while(valueInc.isPressed() && change > 0 || valueDec.isPressed() && change < 0) {
-            if (settingsSlot == 0) { // if frame count is selected
-                if (change > 0) {
+        while(valueInc.isPressed() && change > 0 || valueDec.isPressed() && change < 0)
+        {
+            if(settingsSlot == 0) // if frame count is selected
+            {
+                if(change > 0)
+                {
                     changeFramesByTime(15); // increment 15 seconds intervals, can be changed
                 }
-                else if (change < 0) {
+                else if(change < 0)
+                {
                     changeFramesByTime(-15);
                 }
             }
-            else {
-                intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
+            else
+            {
+                if(intervalToRecord + 5 * change > 0)
+                {
+                    intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
+                }
             }
+            menuChange(0);
+            pros::delay(200);
         }
-        menuChange(0);
-        pros::delay(200);
-        }
-    }
-}
-
-void changeFramesByTime(int seconds) {
-    framesToRecord += seconds*1000/intervalToRecord;
-    if (framesToRecord > maxFrames || framesToRecord < minFrames) {
-        framesToRecord -= seconds*1000/intervalToRecord;
     }
 }
 
