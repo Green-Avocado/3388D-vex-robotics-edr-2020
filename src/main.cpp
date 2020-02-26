@@ -107,9 +107,9 @@ void replayPrint(int line, int selection)
 void menuChange(int change)
 {
     screenClear();
-    master.set_text(1, 0, ">");
     if(menuLevel == 0)
     {
+        master.set_text(1, 0, ">");
         menuSelection += change;
         if(menuSelection < 0) menuSelection += menuItems;
         else if(menuSelection > menuItems - 1) menuSelection += -menuItems;
@@ -120,6 +120,7 @@ void menuChange(int change)
     }
     else if(menuLevel == 1)
     {
+        master.set_text(1, 0, ">");
         replaySlot += change;
         if(replaySlot < 0) replaySlot += saveSlots;
         else if(replaySlot > saveSlots - 1) replaySlot += -saveSlots;
@@ -130,14 +131,16 @@ void menuChange(int change)
     }
     else if(menuLevel == 2)
     {
-        screenClear();
+        pros::delay(textUpdateBuffer);
         master.print(0, 2, "Frames: %d", framesToRecord);
+        pros::delay(textUpdateBuffer);
         master.print(1, 2, "Interval: %d", intervalToRecord);
         if(change != 0)
         {
             if(settingsSlot == 0) settingsSlot = 1;
             else settingsSlot = 0;
         }
+        pros::delay(textUpdateBuffer);
         master.print(settingsSlot, 0, ">");
     }
 }
@@ -427,7 +430,7 @@ void valueChange(int change)
         else subject = &intervalToRecord;
         do
         {
-            if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta;
+            if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta * change;
             menuChange(0);
             if(delta < 50) delta += 1;
             pros::delay(200);
