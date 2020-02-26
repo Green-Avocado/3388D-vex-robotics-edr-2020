@@ -132,7 +132,7 @@ void menuChange(int change)
     else if(menuLevel == 2)
     {
         pros::delay(textUpdateBuffer);
-        master.print(0, 2, "Frames: %d", framesToRecord);
+        master.print(0, 2, "Seconds: %d", framesToRecord*intervalToRecord/1000);
         pros::delay(textUpdateBuffer);
         master.print(1, 2, "Interval: %d", intervalToRecord);
         if(change != 0)
@@ -422,19 +422,31 @@ void levelChange(int change)
 
 void valueChange(int change)
 {
-    int delta = 1;
-    int *subject;
     if(menuLevel == 2);
     {
-        if(settingsSlot == 0) subject = &framesToRecord;
-        else subject = &intervalToRecord;
-        do
-        {
-            if(*subject + delta > 0 && (settingsSlot == 1 || intervalToRecord + delta <= maxFrames)) *subject += delta * change;
-            menuChange(0);
-            if(delta < 50) delta += 1;
-            pros::delay(200);
-        } while((valueInc.isPressed() && change > 0) || (valueDec.isPressed() && change < 0));
+        while(valueInc.isPressed() && change > 0 || valueDec.isPressed() && change < 0) {
+            if (settingsSlot == 0) { // if frame count is selected
+                if (change > 0) {
+                    changeFramesByTime(15); // increment 15 seconds intervals, can be changed
+                }
+                else if (change < 0) {
+                    changeFramesByTime(-15);
+                }
+            }
+            else {
+                intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
+            }
+        }
+        menuChange(0);
+        pros::delay(200);
+        }
+    }
+}
+
+void changeFramesByTime(int seconds) {
+    framesToRecord += seconds*1000/intervalToRecord;
+    if (framesToRecord > maxFrames || framesToRecord < minFrames) {
+        framesToRecord -= seconds*1000/intervalToRecord;
     }
 }
 
