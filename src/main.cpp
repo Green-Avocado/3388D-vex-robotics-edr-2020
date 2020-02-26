@@ -434,10 +434,10 @@ void levelChange(int change)
 
 void changeFramesByTime(int seconds)
 {
-    framesToRecord += seconds*1000/intervalToRecord;
-    if(framesToRecord > maxFrames || framesToRecord < minFrames)
+    int change = seconds * 1000 / intervalToRecord;
+    if(framesToRecord + change > minFrames && framesToRecord + change < maxFrames)
     {
-        framesToRecord -= seconds*1000/intervalToRecord;
+        framesToRecord += change;
     }
 }
 
