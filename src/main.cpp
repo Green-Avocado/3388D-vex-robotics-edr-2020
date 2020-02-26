@@ -272,8 +272,8 @@ void Fdrive(int x, int y)
     if(abs(y + x) > 3)
     {
         if (stacking == 1) {
-            intakeLeft.move(y * 27 / 10);
-            intakeRight.move(y * 27 / 10);
+            intakeLeft.move(-y * 27 / 10);
+            intakeRight.move(-y * 27 / 10);
         }
         driveLeft1.move((y + x) / 2);
         driveLeft2.move((y + x) / 2);
