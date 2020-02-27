@@ -76,7 +76,6 @@ int stackingX[maxFrames];
 int timerSec;
 int timerTenth;
 int timerMS;
-int alignSpacing;
 
 //control based
 int stacking = 0;
@@ -326,7 +325,6 @@ void updateTimers()
     timerMS -= replayInterval;
     timerSec = timerMS / 1000;
     timerTenth = (timerMS % 1000) / 100;
-    alignSpacing = 6 - (timerSec / 10);
 }
 
 void record()
@@ -341,7 +339,7 @@ void record()
 
     timerMS = replayFrames * replayInterval;
     updateTimers();
-    master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+    master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
 
     for(int i = 0; i < replayFrames; i++)
     {
@@ -363,7 +361,7 @@ void record()
 
         updateTimers();
         if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
-            master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+            master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
 
         pros::delay(replayInterval);
     }
@@ -383,7 +381,7 @@ void replay()
 
     timerMS = replayFrames * replayInterval;
     updateTimers();
-    master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+    master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
 
     if(replayVersion == 'A')
     {
@@ -397,7 +395,7 @@ void replay()
 
             updateTimers();
             if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
-                master.print(1, alignSpacing, "%d.%d       ", timerSec, timerTenth);
+                master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
 
             pros::delay(replayInterval);
         }
