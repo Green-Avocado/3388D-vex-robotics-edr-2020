@@ -472,15 +472,6 @@ void changeFramesByTime(int seconds)
     }
 }
 
-void setFramesByTime(int seconds)
-{
-    int newFrameCount = seconds * 1000 / intervalToRecord;
-    if(newFrameCount >= 0 && newFrameCount <= maxFrames)
-    {
-        framesToRecord = newFrameCount;
-    }
-}
-
 void valueChange(int change)
 {
     if(menuLevel == 2);
@@ -502,9 +493,12 @@ void valueChange(int change)
             {
                 if(intervalToRecord + 5 * change > 0)
                 {
-                    int currentTime = framesToRecord*intervalToRecord/1000;
-                    intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
-                    setFramesByTime(currentTime);
+                    int newFrameCount = framesToRecord * intervalToRecord / (intervalToRecord + 5 * change);
+                    if(newFrameCount >= 0 && newFrameCount <= maxFrames)
+                    {
+                        framesToRecord = newFrameCount;
+                        intervalToRecord += 5 * change; // 5 ms interval steps to ensure that frame count is always an int
+                    }
                 }
             }
             menuChange(0);
