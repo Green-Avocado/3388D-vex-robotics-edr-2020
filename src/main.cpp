@@ -35,7 +35,6 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define traySpeed 0.7
 
 //recording settings
-#define minFrames 750
 #define maxFrames 3000
 
 //display text
@@ -63,7 +62,7 @@ const char *menuItemNames[] = {
 char filename[] = "/usd/rec0.txt";
 char recordVersion = 'A';
 char replayVersion = recordVersion;
-int replayFrames = minFrames;
+int replayFrames = 750;
 int replayInterval = 20;
 int framesToRecord = replayFrames;
 int intervalToRecord = 20;
@@ -467,7 +466,7 @@ void levelChange(int change)
 void changeFramesByTime(int seconds)
 {
     int change = seconds * 1000 / intervalToRecord;
-    if(framesToRecord + change >= minFrames && framesToRecord + change <= maxFrames)
+    if(framesToRecord + change >= 0 && framesToRecord + change <= maxFrames)
     {
         framesToRecord += change;
     }
@@ -476,7 +475,7 @@ void changeFramesByTime(int seconds)
 void setFramesByTime(int seconds)
 {
     int newFrameCount = seconds * 1000 / intervalToRecord;
-    if(newFrameCount >= minFrames && newFrameCount <= maxFrames)
+    if(newFrameCount >= 0 && newFrameCount <= maxFrames)
     {
         framesToRecord = newFrameCount;
     }
