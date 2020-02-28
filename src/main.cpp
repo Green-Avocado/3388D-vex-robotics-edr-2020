@@ -35,7 +35,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define traySpeed 0.7
 
 //recording settings
-#define maxFrames 3000
+#define maxFrames 6000
 
 //display text
 #define textDuration 200
