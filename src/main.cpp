@@ -489,7 +489,7 @@ void valueChange(int change)
                     changeFramesByTime(-15);
                 }
             }
-            else
+            else if(settingsSlot == 1)
             {
                 if(intervalToRecord + 5 * change > 0)
                 {
