@@ -43,7 +43,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 
 //menu settings
 #define menuItems 5
-#define saveSlots 10
+#define saveSlots 100
 
 //user interface
 int menuSelection = 0;
