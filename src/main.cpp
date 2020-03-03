@@ -44,12 +44,15 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 //menu settings
 #define menuItems 5
 #define saveSlots 100
+#define saveSlotTens 2
 
 //user interface
 int menuSelection = 0;
 int menuLevel = 0;
 int replaySlot = 0;
 int settingsSlot = 0;
+int replayArray[saveSlotTens] = {0, 0};
+int replayCursor = 0;
 const char *menuItemNames[] = {
     "Read            ",
     "Write           ",
@@ -101,12 +104,6 @@ void menuPrint(int line, int selection)
     master.print(line, 2, "%s", menuItemNames[selection]);
 }
 
-void replayPrint(int line, int selection)
-{
-    pros::delay(textUpdateBuffer);
-    master.print(line, 2, "Slot %d", selection);
-}
-
 void menuChange(int change)
 {
     screenClear();
@@ -123,13 +120,18 @@ void menuChange(int change)
     }
     else if(menuLevel == 1)
     {
-        master.set_text(1, 0, ">");
-        replaySlot += change;
-        if(replaySlot < 0) replaySlot += saveSlots;
-        else if(replaySlot > saveSlots - 1) replaySlot += -saveSlots;
-        for(int i = -1; i < 2; i++)
+        replayArray[replayCursor] += change;
+        if(replayArray[replayCursor] < 0) replayArray[replayCursor] += 10;
+        else if(replayArray[replayCursor] > 9) replayArray[replayCursor] += -10;
+        replaySlot = replayArray[1] * 10 + replayArray[0];
+        pros::delay(textUpdateBuffer);
+        if(replayCursor == 0)
         {
-            replayPrint(i + 1, (replaySlot + i + saveSlots) % saveSlots);
+            master.print(1, 2, "Slot   %d > %d", replayArray[1], replayArray[0]);
+        }
+        else if(replayCursor == 1)
+        {
+            master.print(1, 2, "Slot > %d   %d", replayArray[1], replayArray[0]);
         }
     }
     else if(menuLevel == 2)
@@ -424,6 +426,7 @@ void levelChange(int change)
             if(menuSelection == 0 || menuSelection == 1)
             {
                 menuLevel = 1;
+                replayCursor = 0;
                 menuChange(0);
             }
             else if(menuSelection == 2 || menuSelection == 3)
@@ -474,7 +477,14 @@ void changeFramesByTime(int seconds)
 
 void valueChange(int change)
 {
-    if(menuLevel == 2);
+    if(menuLevel == 1)
+    {
+        replayCursor += change;
+        if(replayCursor < 0) replayCursor += saveSlotTens;
+        else if(replayCursor > saveSlotTens - 1) replayCursor += -saveSlotTens;
+        menuChange(0);
+    }
+    else if(menuLevel == 2)
     {
         while(valueInc.isPressed() && change > 0 || valueDec.isPressed() && change < 0)
         {
