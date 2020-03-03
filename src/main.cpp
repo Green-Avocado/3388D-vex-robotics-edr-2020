@@ -125,13 +125,17 @@ void menuChange(int change)
         else if(replayArray[replayCursor] > 9) replayArray[replayCursor] += -10;
         replaySlot = replayArray[1] * 10 + replayArray[0];
         pros::delay(textUpdateBuffer);
+        master.print(0, 2, "File number:");
+        pros::delay(textUpdateBuffer);
+        master.print(1, 2, "%d%d", replayArray[1], replayArray[0]);
+        pros::delay(textUpdateBuffer);
         if(replayCursor == 0)
         {
-            master.print(1, 2, "Slot   %d > %d", replayArray[1], replayArray[0]);
+            master.print(2, 2, " ^");
         }
         else if(replayCursor == 1)
         {
-            master.print(1, 2, "Slot > %d   %d", replayArray[1], replayArray[0]);
+            master.print(2, 2, "^ ");
         }
     }
     else if(menuLevel == 2)
