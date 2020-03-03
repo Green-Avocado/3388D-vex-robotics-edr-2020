@@ -120,7 +120,7 @@ void menuChange(int change)
     }
     else if(menuLevel == 1)
     {
-        replayArray[replayCursor] += change;
+        replayArray[replayCursor] -= change;
         if(replayArray[replayCursor] < 0) replayArray[replayCursor] += 10;
         else if(replayArray[replayCursor] > 9) replayArray[replayCursor] += -10;
         replaySlot = replayArray[1] * 10 + replayArray[0];
