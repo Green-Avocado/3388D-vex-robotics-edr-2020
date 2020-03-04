@@ -324,6 +324,14 @@ void Ftray(int x)
     tray.move(x);
 }
 
+void stopAll()
+{
+    Fdrive(0,0);
+    Farm(0);
+    Fintake(0);
+    Ftray(0);
+}
+
 //rerun functions
 void updateTimers()
 {
@@ -370,6 +378,7 @@ void record()
 
         pros::delay(replayInterval);
     }
+    stopAll();
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
     pros::delay(textDuration);
@@ -405,6 +414,7 @@ void replay()
             pros::delay(replayInterval);
         }
     }
+    stopAll();
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
     pros::delay(textDuration);
