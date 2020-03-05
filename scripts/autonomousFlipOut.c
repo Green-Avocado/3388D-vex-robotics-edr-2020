@@ -45,7 +45,7 @@ void replaceFile(char filename[])
             }
             else
             {
-                fprintf(write, "%d ", data[j][i + 6]);
+                fprintf(write, "%d ", data[j][i - openingFrames]);
             }
         }
     }
