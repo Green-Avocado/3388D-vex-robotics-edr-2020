@@ -5,6 +5,8 @@ void replaceFile(char filename[])
     int frames;
     int interval;
     int openingFrames;
+    
+    printf("starting\n");
 
     FILE* read = fopen(filename, "r");
     fscanf(read, "%c%d%d", &version, &frames, &interval);
@@ -19,6 +21,8 @@ void replaceFile(char filename[])
     }
     fclose(read);
 
+    printf("read\n");
+
     openingFrames = 250 / interval;
 
     FILE* write = fopen(filename, "w");
@@ -30,7 +34,7 @@ void replaceFile(char filename[])
         {
             if(i < openingFrames)
             {
-                if(j == 0 || j == 1)
+                if(j == 1)
                 {
                     fprintf(write, "127 ");
                 }
@@ -46,13 +50,15 @@ void replaceFile(char filename[])
         }
     }
     fclose(write);
+
+    printf("written\n");
 }
 
 int main(int argc, char **argv)
 {
-    for(int i = 0; i < argc; i++)
+    for(int i = 1; i < argc; i++)
     {
-        replaceFile(argv[i + 1]);
+        replaceFile(argv[i]);
     }
 
     return 0;
