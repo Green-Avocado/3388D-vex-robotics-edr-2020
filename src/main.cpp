@@ -78,6 +78,7 @@ int stackingX[maxFrames];
 int timerSec;
 int timerTenth;
 int timerMS;
+int isLoaded = 0;
 
 //control based
 int stacking = 0;
@@ -238,6 +239,7 @@ void readSD()
         fclose(usd_file_read);
         pros::delay(textUpdateBuffer);
         master.set_text(2, 0, "Done");
+        isLoaded = 1;
     }
     else
     {
@@ -384,39 +386,47 @@ void record()
     pros::delay(textDuration);
     menuLevel = 0;
     menuChange(0);
+    isLoaded = 1;
 }
 
 void replay()
 {
     screenClear();
-    master.set_text(0, 0, "Running");
-    pros::delay(textUpdateBuffer);
-    master.set_text(1, 0, "Autonomous...");
-
-    timerMS = replayFrames * replayInterval;
-    updateTimers();
-    master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
-
-    if(replayVersion == 'A')
+    if(isLoaded == 1)
     {
-        for(int i = 0; i < replayFrames; i++)
+        master.set_text(0, 0, "Running");
+        pros::delay(textUpdateBuffer);
+        master.set_text(1, 0, "Autonomous...");
+
+        timerMS = replayFrames * replayInterval;
+        updateTimers();
+        master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
+
+        if(replayVersion == 'A')
         {
-            setStacking(stackingX[i]);
-            Fdrive(driveX[i], driveY[i]);
-            Farm(armX[i]);
-            Fintake(intakeX[i]);
-            Ftray(trayX[i]);
+            for(int i = 0; i < replayFrames; i++)
+            {
+                setStacking(stackingX[i]);
+                Fdrive(driveX[i], driveY[i]);
+                Farm(armX[i]);
+                Fintake(intakeX[i]);
+                Ftray(trayX[i]);
 
-            updateTimers();
-            if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
-                master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
+                updateTimers();
+                if(timerTenth != ((timerMS + replayInterval) % 1000) / 100)
+                    master.print(1, 0, "%d.%d       ", timerSec, timerTenth);
 
-            pros::delay(replayInterval);
+                pros::delay(replayInterval);
+            }
         }
+        stopAll();
+        pros::delay(textUpdateBuffer);
+        master.set_text(2, 0, "Done");
     }
-    stopAll();
-    pros::delay(textUpdateBuffer);
-    master.set_text(2, 0, "Done");
+    else
+    {
+        master.set_text(0, 0, "ERR: MEM EMPTY");
+    }
     pros::delay(textDuration);
     menuLevel = 0;
     menuChange(0);
