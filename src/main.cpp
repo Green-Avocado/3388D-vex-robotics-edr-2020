@@ -63,6 +63,7 @@ const char *menuItemNames[] = {
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
+char swapname[] = "/usd/swap.txt";
 char recordVersion = 'A';
 char replayVersion = recordVersion;
 int replayFrames = 750;
@@ -93,9 +94,13 @@ void lineClear(int line)
 
 void screenClear()
 {
-    lineClear(0);
-    lineClear(1);
-    lineClear(2);
+    pros::delay(textUpdateBuffer);
+    master.set_text(0, 0, "                ");
+    pros::delay(textUpdateBuffer);
+    master.set_text(1, 0, "                ");
+    pros::delay(textUpdateBuffer);
+    master.set_text(2, 0, "                ");
+    pros::delay(textUpdateBuffer);
 }
 
 //menu functions
@@ -192,6 +197,40 @@ void writeSD()
         fprintf(usd_file_write, "%d ", *(stackingX + i));
     }
     fclose(usd_file_write);
+
+    FILE* usd_swap_write = fopen(swapname, "w");
+    fprintf(usd_swap_write, "%c %d %d\n", replayVersion, replayFrames, replayInterval);
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(driveX + i));
+    }
+    fprintf(usd_swap_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(driveY + i));
+    }
+    fprintf(usd_swap_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(armX + i));
+    }
+    fprintf(usd_swap_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(intakeX + i));
+    }
+    fprintf(usd_swap_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(trayX + i));
+    }
+    fprintf(usd_swap_write, "\n");
+    for(int i = 0; i < replayFrames; i++)
+    {
+        fprintf(usd_swap_write, "%d ", *(stackingX + i));
+    }
+    fclose(usd_swap_write);
+
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
     pros::delay(textDuration);
@@ -199,11 +238,11 @@ void writeSD()
     menuChange(0);
 }
 
-void readSD()
+void readSD(char file[])
 {
     screenClear();
     master.set_text(0, 0, "Reading SD...");
-    if(FILE* usd_file_read = fopen(filename, "r"))
+    if(FILE* usd_file_read = fopen(file, "r"))
     {
         fscanf(usd_file_read, "%c%d%d", &replayVersion, &replayFrames, &replayInterval);
         fscanf(usd_file_read, "\n");
@@ -479,7 +518,7 @@ void levelChange(int change)
             switch(menuSelection)
             {
                 case 0:
-                    readSD();
+                    readSD(filename);
                     break;
 
                 case 1:
@@ -553,11 +592,11 @@ void initialize()
 
     for(int i = 0; i < maxFrames; i++)
     {
-      driveX[i] = 0;
-      driveY[i] = 0;
-      armX[i] = 0;
-      intakeX[i] = 0;
-      trayX[i] = 0;
+        driveX[i] = 0;
+        driveY[i] = 0;
+        armX[i] = 0;
+        intakeX[i] = 0;
+        trayX[i] = 0;
     }
 
     driveLeft1.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
@@ -593,6 +632,10 @@ void disabled()
  */
 void competition_initialize()
 {
+    if(isLoaded == 0)
+    {
+        readSD(swapname);
+    }
 }
 
 /**
