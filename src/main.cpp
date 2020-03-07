@@ -610,6 +610,11 @@ void initialize()
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
     menuChange(0);
+
+    if(isLoaded == 0)
+    {
+        readSD(swapname);
+    }
 }
 
 /**
@@ -651,6 +656,10 @@ void competition_initialize()
  */
 void autonomous()
 {
+    if(isLoaded == 0)
+    {
+        readSD(swapname);
+    }
     replay();
 }
 
