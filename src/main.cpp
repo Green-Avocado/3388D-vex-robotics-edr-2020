@@ -9,7 +9,7 @@ pros::Motor driveRight2(9, 1);
 pros::Motor arm(10, 0);
 pros::Motor intakeLeft(1, 1);
 pros::Motor intakeRight(2, 0);
-pros::Motor tray(6, 1);
+pros::Motor tray(6, pros::E_MOTOR_GEARSET_36, 1, pros::E_MOTOR_ENCODER_DEGREES);
 
 //controller declarations
 pros::Controller master (pros::E_CONTROLLER_MASTER);
@@ -33,6 +33,8 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
+#define trayDynamicRange 0.2
+#define trayTargetPosition 150
 
 //recording settings
 #define maxFrames 6000
@@ -370,6 +372,14 @@ void Fintake(int x)
 
 void Ftray(int x)
 {
+    if(x > 0)
+    {
+        x = x * (1 - trayDynamicRange * tray.get_position() / trayTargetPosition);
+    }
+    else if(x < 0)
+    {
+        x = x * (1 - trayDynamicRange * ( 2 - tray.get_position() / trayTargetPosition));
+    }
     tray.move(x);
 }
 
@@ -597,8 +607,6 @@ void valueChange(int change)
  */
 void initialize()
 {
-	pros::lcd::initialize();
-
     for(int i = 0; i < maxFrames; i++)
     {
         driveX[i] = 0;
@@ -618,7 +626,7 @@ void initialize()
     intakeRight.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
     tray.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
-    menuChange(0);
+    tray.tare_position();
 
     if(isLoaded == 0)
     {
