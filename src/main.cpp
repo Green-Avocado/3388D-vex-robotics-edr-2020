@@ -160,6 +160,40 @@ void menuChange(int change)
     }
 }
 
+void writeSwap() {
+  FILE* usd_swap_write = fopen(swapname, "w");
+  fprintf(usd_swap_write, "%c %d %d\n", replayVersion, replayFrames, replayInterval);
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(driveX + i));
+  }
+  fprintf(usd_swap_write, "\n");
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(driveY + i));
+  }
+  fprintf(usd_swap_write, "\n");
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(armX + i));
+  }
+  fprintf(usd_swap_write, "\n");
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(intakeX + i));
+  }
+  fprintf(usd_swap_write, "\n");
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(trayX + i));
+  }
+  fprintf(usd_swap_write, "\n");
+  for(int i = 0; i < replayFrames; i++)
+  {
+      fprintf(usd_swap_write, "%d ", *(stackingX + i));
+  }
+  fclose(usd_swap_write);
+}
 //file functions
 void writeSD()
 {
@@ -197,40 +231,7 @@ void writeSD()
         fprintf(usd_file_write, "%d ", *(stackingX + i));
     }
     fclose(usd_file_write);
-
-    FILE* usd_swap_write = fopen(swapname, "w");
-    fprintf(usd_swap_write, "%c %d %d\n", replayVersion, replayFrames, replayInterval);
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(driveX + i));
-    }
-    fprintf(usd_swap_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(driveY + i));
-    }
-    fprintf(usd_swap_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(armX + i));
-    }
-    fprintf(usd_swap_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(intakeX + i));
-    }
-    fprintf(usd_swap_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(trayX + i));
-    }
-    fprintf(usd_swap_write, "\n");
-    for(int i = 0; i < replayFrames; i++)
-    {
-        fprintf(usd_swap_write, "%d ", *(stackingX + i));
-    }
-    fclose(usd_swap_write);
-
+    writeSwap();
     pros::delay(textUpdateBuffer);
     master.set_text(2, 0, "Done");
     pros::delay(textDuration);
@@ -279,6 +280,7 @@ void readSD(char file[])
         pros::delay(textUpdateBuffer);
         master.set_text(2, 0, "Done");
         isLoaded = 1;
+        writeSwap();
     }
     else
     {
@@ -426,6 +428,7 @@ void record()
     menuLevel = 0;
     menuChange(0);
     isLoaded = 1;
+    writeSwap();
 }
 
 void replay()
