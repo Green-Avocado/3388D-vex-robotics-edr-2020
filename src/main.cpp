@@ -787,7 +787,7 @@ void opcontrol()
         );
 
         //UI management
-        void menuManagement();
+        menuManagement();
 
         pros::delay(20);
 	}
