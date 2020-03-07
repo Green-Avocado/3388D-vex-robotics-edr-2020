@@ -33,7 +33,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.7
-#define trayDynamicRange 0.2
+#define trayDynamicRange 0.1
 #define trayTargetPosition 150
 
 //recording settings
@@ -325,15 +325,7 @@ void setStacking(int stackVal)
 
 int trayLogic(int rawInput)
 {
-    int x = 0;
-    if(rawInput > 0)
-    {
-        x = rawInput * (1 - trayDynamicRange * tray.get_position() / trayTargetPosition);
-    }
-    else if(x < 0)
-    {
-        x = rawInput * (1 - trayDynamicRange * ( 2 - tray.get_position() / trayTargetPosition));
-    }
+    int x = rawInput * (1 - trayDynamicRange * tray.get_position() / trayTargetPosition);
     return x;
 }
 
