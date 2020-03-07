@@ -30,7 +30,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 
 //speed factors
 #define driveSpeed 1
-#define armSpeed 0.75
+#define armSpeed 0.8
 #define intakeSpeed 1
 #define traySpeed 0.75
 #define trayDynamicRange 0.05
