@@ -1,5 +1,5 @@
 #include <stdio.h>
-int constant = 0.8;
+int multiplier = 80;
 
 int fix(char filename[])
 {
@@ -25,7 +25,7 @@ int fix(char filename[])
 
     for(int i = 0; i < frames; i++)
     {
-        data[5][i] *= constant;
+        data[4][i] = data[4][i] * multiplier / 100;
     }
 
     FILE* write = fopen(filename, "w");
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         {
             if(argv[i][1] == 'c' && argv[i][2] == '\0')
             {
-                sscanf(argv[i+1], "%d", &constant);
+                sscanf(argv[i+1], "%d", &multiplier);
                 i++;
             }
             else
