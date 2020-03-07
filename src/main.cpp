@@ -317,8 +317,23 @@ int button_to_int(bool x, bool y)
     }
 }
 
-void setStacking(int stackVal) {
+void setStacking(int stackVal)
+{
     stacking = stackVal;
+}
+
+int trayLogic(int rawInput)
+{
+    int x = 0;
+    if(rawInput > 0)
+    {
+        x = rawInput * (1 - trayDynamicRange * tray.get_position() / trayTargetPosition);
+    }
+    else if(x < 0)
+    {
+        x = rawInput * (1 - trayDynamicRange * ( 2 - tray.get_position() / trayTargetPosition));
+    }
+    return x;
 }
 
 //motor functions
@@ -372,14 +387,6 @@ void Fintake(int x)
 
 void Ftray(int x)
 {
-    if(x > 0)
-    {
-        x = x * (1 - trayDynamicRange * tray.get_position() / trayTargetPosition);
-    }
-    else if(x < 0)
-    {
-        x = x * (1 - trayDynamicRange * ( 2 - tray.get_position() / trayTargetPosition));
-    }
     tray.move(x);
 }
 
@@ -428,7 +435,7 @@ void record()
         intakeX[i] = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
         Fintake(intakeX[i]);
 
-        trayX[i] = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
+        trayX[i] = trayLogic(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()));
         Ftray(trayX[i]);
 
         updateTimers();
@@ -777,7 +784,14 @@ void opcontrol()
         Fdrive(master.get_analog(ANALOG_LEFT_X) * driveSpeed, master.get_analog(ANALOG_LEFT_Y) * driveSpeed);
         Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
         Fintake(master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed);
-        Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed);
+        Ftray(
+            trayLogic(
+                button_to_int(
+                    trayUpButton.isPressed(),
+                    trayDownButton.isPressed()
+                ) * traySpeed
+            )
+        );
 
         //UI management
         void menuManagement();
