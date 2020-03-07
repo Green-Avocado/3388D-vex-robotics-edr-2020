@@ -60,6 +60,12 @@ const char *menuItemNames[] = {
     "Replay          ",
     "Settings        ",
 };
+bool menuUpNew = true;
+bool menuDownNew = true;
+bool menuForwardNew = true;
+bool menuBackNew = true;
+bool valueIncNew = true;
+bool valueDecNew = true;
 
 //replay memory
 char filename[] = "/usd/rec0.txt";
@@ -620,6 +626,69 @@ void initialize()
     }
 }
 
+void menuManagement()
+{
+    if(menuUp.isPressed())
+    {
+        if(menuUpNew)
+        {
+            menuChange(-1);
+            menuUpNew = false;
+        }
+    }
+    else menuUpNew = true;
+
+    if(menuDown.isPressed())
+    {
+        if(menuDownNew)
+        {
+            menuChange(1);
+            menuDownNew = false;
+        }
+    }
+    else menuDownNew = true;
+
+    if(menuForward.isPressed())
+    {
+        if(menuForwardNew)
+        {
+            levelChange(1);
+            menuForwardNew = false;
+        }
+    }
+    else menuForwardNew = true;
+
+    if(menuBack.isPressed())
+    {
+        if(menuBackNew)
+        {
+            levelChange(-1);
+            menuBackNew = false;
+        }
+    }
+    else menuBackNew = true;
+
+    if(valueInc.isPressed())
+    {
+        if(valueIncNew)
+        {
+            valueChange(1);
+            valueIncNew = false;
+        }
+    }
+    else valueIncNew = true;
+
+    if(valueDec.isPressed())
+    {
+        if(valueDecNew)
+        {
+            valueChange(-1);
+            valueDecNew = false;
+        }
+    }
+    else valueDecNew = true;
+}
+
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
@@ -643,6 +712,11 @@ void competition_initialize()
     if(isLoaded == 0)
     {
         readSD(swapname);
+    }
+    while (true)
+    {
+        menuManagement();
+        pros::delay(20);
     }
 }
 
@@ -698,65 +772,7 @@ void opcontrol()
         Ftray(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()) * traySpeed);
 
         //UI management
-        if(menuUp.isPressed())
-        {
-            if(menuUpNew)
-            {
-                menuChange(-1);
-                menuUpNew = false;
-            }
-        }
-        else menuUpNew = true;
-
-        if(menuDown.isPressed())
-        {
-            if(menuDownNew)
-            {
-                menuChange(1);
-                menuDownNew = false;
-            }
-        }
-        else menuDownNew = true;
-
-        if(menuForward.isPressed())
-        {
-            if(menuForwardNew)
-            {
-                levelChange(1);
-                menuForwardNew = false;
-            }
-        }
-        else menuForwardNew = true;
-
-        if(menuBack.isPressed())
-        {
-            if(menuBackNew)
-            {
-                levelChange(-1);
-                menuBackNew = false;
-            }
-        }
-        else menuBackNew = true;
-
-        if(valueInc.isPressed())
-        {
-            if(valueIncNew)
-            {
-                valueChange(1);
-                valueIncNew = false;
-            }
-        }
-        else valueIncNew = true;
-
-        if(valueDec.isPressed())
-        {
-            if(valueDecNew)
-            {
-                valueChange(-1);
-                valueDecNew = false;
-            }
-        }
-        else valueDecNew = true;
+        void menuManagement();
 
         pros::delay(20);
 	}
