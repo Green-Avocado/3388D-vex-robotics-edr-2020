@@ -33,7 +33,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define armSpeed 0.75
 #define intakeSpeed 1
 #define traySpeed 0.75
-#define trayDynamicRange 0.1
+#define trayDynamicRange 0.05
 #define trayTargetPosition 150
 
 //recording settings
@@ -88,6 +88,7 @@ int timerSec;
 int timerTenth;
 int timerMS;
 int isLoaded = 0;
+int isCompetition = 0;
 
 //control based
 int stacking = 0;
@@ -513,15 +514,18 @@ void levelChange(int change)
             }
             else if(menuSelection == 2 || menuSelection == 3)
             {
-                switch(menuSelection)
+                if(isCompetition == 0)
                 {
-                    case 2:
-                        record();
-                        break;
+                    switch(menuSelection)
+                    {
+                        case 2:
+                            record();
+                            break;
 
-                    case 3:
-                        replay();
-                        break;
+                        case 3:
+                            replay();
+                            break;
+                    }
                 }
             }
             else if(menuSelection == 4)
@@ -717,6 +721,7 @@ void disabled()
  */
 void competition_initialize()
 {
+    isCompetition = 1;
     if(isLoaded == 0)
     {
         readSD(swapname);
