@@ -32,7 +32,7 @@ okapi::ControllerButton stackingButton(okapi::ControllerDigital::X);
 #define driveSpeed 1
 #define armSpeed 0.8
 #define intakeSpeed 1
-#define traySpeed 0.75
+#define traySpeed 1
 #define trayDynamicRange 0.05
 #define trayTargetPosition 150
 
@@ -429,7 +429,7 @@ void record()
         intakeX[i] = master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed;
         Fintake(intakeX[i]);
 
-        trayX[i] = trayLogic(button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed()));
+        trayX[i] = button_to_int(trayUpButton.isPressed(), trayDownButton.isPressed());
         Ftray(trayX[i]);
 
         updateTimers();
@@ -768,13 +768,7 @@ void autonomous()
  */
 void opcontrol()
 {
-    bool menuUpNew = true;
-    bool menuDownNew = true;
-    bool menuForwardNew = true;
-    bool menuBackNew = true;
-    bool valueIncNew = true;
-    bool valueDecNew = true;
-
+    int rumbleTimer = 0;
 	while (true)
     {
         //user controls
@@ -783,16 +777,22 @@ void opcontrol()
         Farm(button_to_int(armUpButton.isPressed(), armDownButton.isPressed()) * armSpeed);
         Fintake(master.get_analog(ANALOG_RIGHT_Y) * intakeSpeed);
         Ftray(
-            trayLogic(
-                button_to_int(
-                    trayUpButton.isPressed(),
-                    trayDownButton.isPressed()
-                ) * traySpeed
-            )
+            button_to_int(
+                trayUpButton.isPressed(),
+                trayDownButton.isPressed()
+            ) * traySpeed
         );
 
         //UI management
         menuManagement();
+
+        //rumble
+        rumbleTimer++;
+        if(rumbleTimer > 15000 / 20)
+        {
+            rumbleTimer = 0;
+            master.rumble("---");
+        }
 
         pros::delay(20);
 	}
