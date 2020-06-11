@@ -1,3 +1,8 @@
-# 3388D-OLD
-3388D-VEX robot code moved onto VEXPROS
-This contains legacy code as we've moved on to the new 3388D repository for Worlds.
+# 3388D Vex Robotics EDR 2020
+
+Written for Vex PROS.
+
+ - Simple and intuitive controls.
+ - Re-run autonomous programs.
+ - Save up to 100 different autonomous sequences for matches or skills.
+ - Includes scripts to perform changes to existing autonomous programs.
